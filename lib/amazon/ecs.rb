@@ -29,7 +29,8 @@ module Amazon
   class RequestError < StandardError; end
   
   class Ecs
-    SERVICE_URLS = {:us => 'http://webservices.amazon.com/onca/xml?Service=AWSECommerceService',
+    SERVICE_URLS = {
+        :us => 'http://webservices.amazon.com/onca/xml?Service=AWSECommerceService',
         :uk => 'http://webservices.amazon.co.uk/onca/xml?Service=AWSECommerceService',
         :ca => 'http://webservices.amazon.ca/onca/xml?Service=AWSECommerceService',
         :de => 'http://webservices.amazon.de/onca/xml?Service=AWSECommerceService',
@@ -37,25 +38,22 @@ module Amazon
         :fr => 'http://webservices.amazon.fr/onca/xml?Service=AWSECommerceService'
     }
     
+    # Default search options
     @@options = {}
     @@debug = false
 
-    # Default search options
     def self.options
       @@options
     end
     
-    # Set default search options
-    def self.options=(opts)
+    def self.options=(opts = {})
       @@options = opts
     end
     
-    # Get debug flag.
     def self.debug
       @@debug
     end
     
-    # Set debug flag to true or false.
     def self.debug=(dbg)
       @@debug = dbg
     end
@@ -69,10 +67,9 @@ module Amazon
     # For other search type other than keywords, please specify :type => [search type param name].
     def self.item_search(terms, opts = {})
       opts[:operation] = 'ItemSearch'
-      opts[:search_index] = opts[:search_index] || 'Books'
+      opts[:search_index] ||= 'Books'
       
-      type = opts.delete(:type)
-      if type 
+      if type = opts.delete(:type) 
         opts[type.to_sym] = terms
       else 
         opts[:keywords] = terms
@@ -91,7 +88,7 @@ module Amazon
           
     # Generic send request to ECS REST service. You have to specify the :operation parameter.
     def self.send_request(opts)
-      opts = self.options.merge(opts) if self.options
+      opts = self.options.merge(opts)
       request_url = prepare_url(opts)
       log "Request URL: #{request_url}"
       
@@ -131,39 +128,22 @@ module Amazon
       
       # Return an array of Amazon::Element item objects.
       def items
-        unless @items
-          @items = (@doc/"item").collect {|item| Element.new(item)}
-        end
-        @items
-      end
-      
-      # Return the first item (Amazon::Element)
-      def first_item
-        items.first
+        @items ||= (@doc/"item").collect {|item| Element.new(item)}
       end
       
       # Return current page no if :item_page option is when initiating the request.
       def item_page
-        unless @item_page
-          @item_page = (@doc/"itemsearchrequest/itempage").inner_html.to_i
-        end
-        @item_page
+        @item_page ||= (@doc/"itemsearchrequest/itempage").inner_html.to_i
       end
 
       # Return total results.
       def total_results
-        unless @total_results
-          @total_results = (@doc/"totalresults").inner_html.to_i
-        end
-        @total_results
+        @total_results ||= (@doc/"totalresults").inner_html.to_i
       end
       
       # Return total pages.
       def total_pages
-        unless @total_pages
-          @total_pages = (@doc/"totalpages").inner_html.to_i
-        end
-        @total_pages
+        @total_pages ||= (@doc/"totalpages").inner_html.to_i
       end
     end
     
@@ -215,8 +195,7 @@ module Amazon
     # Find Hpricot::Elements matching the given path. Example: element/"author".
     def /(path)
       elements = @element/path
-      return nil if elements.size == 0
-      elements
+      (elements.empty?) ? nil : elements
     end
     
     # Find Hpricot::Elements matching the given path, and convert to Amazon::Element.
@@ -224,9 +203,8 @@ module Amazon
     def search_and_convert(path)
       elements = self./(path)
       return unless elements
-      elements = elements.map{|element| Element.new(element)}
-      return elements.first if elements.size == 1
-      elements
+      elements.map! {|element| Element.new(element)}
+      (elements.size == 1) ? elements.first : elements
     end
 
     # Get the text value of the given path, leave empty to retrieve current element value.
@@ -253,8 +231,7 @@ module Amazon
     def self.get(element, path='')
       return unless element
       result = element.at(path)
-      result = result.inner_html if result
-      result
+      result.inner_html if result
     end
     
     # Similar to #get_unescaped, except an element object must be passed-in.    
@@ -269,11 +246,7 @@ module Amazon
       
       result = element/path
       if (result.is_a? Hpricot::Elements) || (result.is_a? Array)
-        parsed_result = []
-        result.each {|item|
-          parsed_result << Element.get(item)
-        }
-        parsed_result
+        result.map {|item| Element.get(item) }
       else
         [Element.get(result)]
       end
@@ -284,14 +257,10 @@ module Amazon
       return unless element
     
       result = element.at(path)
-      if result
-        hash = {}
-        result = result.children
-        result.each do |item|
-          hash[item.name.to_sym] = item.inner_html
-        end 
+      result.children.inject({}) do |hash, item|
+        hash[item.name.to_sym] = item.inner_html
         hash
-      end
+      end if result
     end
     
     def to_s

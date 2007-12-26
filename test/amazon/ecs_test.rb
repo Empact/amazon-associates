@@ -50,7 +50,7 @@ class Amazon::EcsTest < Test::Unit::TestCase
   
   def test_item_get
     resp = Amazon::Ecs.item_search("0974514055")
-    item = resp.first_item
+    item = resp.items.first
         
     # test get
     assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition", 
@@ -64,7 +64,7 @@ class Amazon::EcsTest < Test::Unit::TestCase
     small_image = item.get_hash("smallimage")
     
     assert_equal 3, small_image.keys.size
-    assert_match "0974514055.01", small_image[:url]
+    assert_equal "http://ecx.images-amazon.com/images/I/01H909PG5YL.jpg", small_image[:url]
     assert_equal "75", small_image[:height]
     assert_equal "59", small_image[:width]
     
@@ -81,7 +81,7 @@ class Amazon::EcsTest < Test::Unit::TestCase
   def test_item_lookup
     resp = Amazon::Ecs.item_lookup('0974514055')
     assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition", 
-    resp.first_item.get("itemattributes/title")
+    resp.items.first.get("itemattributes/title")
   end
   
   def test_item_lookup_with_invalid_request
@@ -99,8 +99,8 @@ class Amazon::EcsTest < Test::Unit::TestCase
   
   def test_search_and_convert
     resp = Amazon::Ecs.item_lookup('0974514055')
-    title = resp.first_item.get("itemattributes/title")
-    authors = resp.first_item.search_and_convert("author")
+    title = resp.items.first.get("itemattributes/title")
+    authors = resp.items.first.search_and_convert("author")
     
     assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition", title
     assert authors.is_a?(Array)
