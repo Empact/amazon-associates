@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/../test_helper'
 
 class Amazon::EcsTest < Test::Unit::TestCase
 
-  AWS_ACCESS_KEY_ID = ''
+  AWS_ACCESS_KEY_ID = '0PP7FTN6FM3BZGGXJWG2'
   raise "Please specify set your AWS_ACCESS_KEY_ID" if AWS_ACCESS_KEY_ID.empty?
   
   Amazon::Ecs.configure do |options|
@@ -58,7 +58,7 @@ class Amazon::EcsTest < Test::Unit::TestCase
       
     # test get_array
     assert_equal ['Dave Thomas', 'Chad Fowler', 'Andy Hunt'], 
-      item.get_array("author")
+      (item/"author").to_a
 
     # test get_hash
     small_image = item.get_hash("smallimage")
@@ -69,12 +69,11 @@ class Amazon::EcsTest < Test::Unit::TestCase
     assert_equal "59", small_image[:width]
     
     # test /
-    reviews = item/"editorialreview"
-	reviews.each do |review|
-		# returns unescaped HTML content, Hpricot escapes all text values
-		assert Amazon::Element.get_unescaped(review, 'source')
-		assert Amazon::Element.get_unescaped(review, 'content')
-	end
+    (item/"editorialreview").each do |review|
+      # returns unescaped HTML content, Hpricot escapes all text values
+      assert review.get_unescaped('source')
+      assert review.get_unescaped('content')
+    end
   end
   
   ## Test item_lookup
@@ -97,10 +96,10 @@ class Amazon::EcsTest < Test::Unit::TestCase
     assert_match(/ABC is not a valid value for ItemId/, resp.error)
   end  
   
-  def test_search_and_convert
+  def test_hpricot_extensions
     resp = Amazon::Ecs.item_lookup('0974514055')
     title = resp.items.first.get("itemattributes/title")
-    authors = resp.items.first.search_and_convert("author")
+    authors = resp.items.first/"author"
     
     assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition", title
     assert authors.is_a?(Array)

@@ -38,29 +38,16 @@ module Amazon
         :fr => 'http://webservices.amazon.fr/onca/xml?Service=AWSECommerceService'
     }
     
-    # Default search options
-    @@options = {}
-    @@debug = false
+    # Default search options 
+    @options = {}
+    @debug = false
+    
+    # see http://railstips.org/2006/11/18/class-and-instance-variables-in-ruby
+    class << self; attr_accessor :debug, :options; end
 
-    def self.options
-      @@options
-    end
-    
-    def self.options=(opts = {})
-      @@options = opts
-    end
-    
-    def self.debug
-      @@debug
-    end
-    
-    def self.debug=(dbg)
-      @@debug = dbg
-    end
-    
-    def self.configure(&proc)
+    def self.configure(&block)
       raise ArgumentError, "Block is required." unless block_given?
-      yield @@options
+      yield @options
     end
     
     # Search amazon items with search terms. Default search index option is 'Books'.
@@ -75,7 +62,7 @@ module Amazon
         opts[:keywords] = terms
       end
       
-      self.send_request(opts)
+      send_request(opts)
     end
 
     # Search an item by ASIN no.
@@ -83,7 +70,7 @@ module Amazon
       opts[:operation] = 'ItemLookup'
       opts[:item_id] = item_id
       
-      self.send_request(opts)
+      send_request(opts)
     end    
           
     # Generic send request to ECS REST service. You have to specify the :operation parameter.
@@ -101,14 +88,11 @@ module Amazon
 
     # Response object returned after a REST call to Amazon service.
     class Response
+      attr_accessor :doc
+      
       # XML input is in string format
       def initialize(xml)
         @doc = Hpricot(xml)
-      end
-
-      # Return Hpricot object.
-      def doc
-        @doc
       end
 
       # Return true if request is valid.
@@ -123,12 +107,11 @@ module Amazon
 
       # Return error message.
       def error
-        Element.get(@doc, "error/message")
+        @doc.get('error/message')
       end
       
-      # Return an array of Amazon::Element item objects.
       def items
-        @items ||= (@doc/"item").collect {|item| Element.new(item)}
+        @items ||= (@doc/:item)
       end
       
       # Return current page no if :item_page option is when initiating the request.
@@ -138,18 +121,18 @@ module Amazon
 
       # Return total results.
       def total_results
-        @total_results ||= (@doc/"totalresults").inner_html.to_i
+        @total_results ||= (@doc/:totalresults).inner_html.to_i
       end
       
       # Return total pages.
       def total_pages
-        @total_pages ||= (@doc/"totalpages").inner_html.to_i
+        @total_pages ||= (@doc/:totalpages).inner_html.to_i
       end
     end
     
     protected
       def self.log(s)
-        return unless self.debug
+        return unless debug
         if defined? RAILS_DEFAULT_LOGGER
           RAILS_DEFAULT_LOGGER.error(s)
         elsif defined? LOGGER
@@ -167,11 +150,11 @@ module Amazon
         raise Amazon::RequestError, "Invalid country '#{country}'" unless request_url
         
         qs = ''
-        opts.each {|k,v|
+        opts.each_pair do |k,v|
           next unless v
           v = v.join(',') if v.is_a? Array
           qs << "&#{camelize(k.to_s)}=#{URI.encode(v.to_s)}"
-        }
+        end
         "#{request_url}#{qs}"
       end
       
@@ -179,92 +162,36 @@ module Amazon
         s.to_s.gsub(/\/(.?)/) { "::" + $1.upcase }.gsub(/(^|_)(.)/) { $2.upcase }
       end
   end
+end
 
-  # Internal wrapper class to provide convenient method to access Hpricot element value.
-  class Element
-    # Pass Hpricot::Elements object
-    def initialize(element)
-      @element = element
-    end
-
-    # Returns Hpricot::Elments object    
-    def elem
-      @element
-    end
-    
-    # Find Hpricot::Elements matching the given path. Example: element/"author".
-    def /(path)
-      elements = @element/path
-      (elements.empty?) ? nil : elements
-    end
-    
-    # Find Hpricot::Elements matching the given path, and convert to Amazon::Element.
-    # Returns an array Amazon::Elements if more than Hpricot::Elements size is greater than 1.
-    def search_and_convert(path)
-      elements = self./(path)
-      return unless elements
-      elements.map! {|element| Element.new(element)}
-      (elements.size == 1) ? elements.first : elements
-    end
-
+module Hpricot
+  # Extend with some convenience methods
+  module Traverse
     # Get the text value of the given path, leave empty to retrieve current element value.
     def get(path='')
-      Element.get(@element, path)
+      result = at(path)
+      result.inner_html if result
     end
     
     # Get the unescaped HTML text of the given path.
     def get_unescaped(path='')
-      Element.get_unescaped(@element, path)
-    end
-    
-    # Get the array values of the given path.
-    def get_array(path='')
-      Element.get_array(@element, path)
-    end
-
-    # Get the children element text values in hash format with the element names as the hash keys.
-    def get_hash(path='')
-      Element.get_hash(@element, path)
-    end
-
-    # Similar to #get, except an element object must be passed-in.
-    def self.get(element, path='')
-      return unless element
-      result = element.at(path)
-      result.inner_html if result
-    end
-    
-    # Similar to #get_unescaped, except an element object must be passed-in.    
-    def self.get_unescaped(element, path='')
-      result = get(element, path)
+      result = get(path)
       CGI::unescapeHTML(result) if result
     end
-
-    # Similar to #get_array, except an element object must be passed-in.
-    def self.get_array(element, path='')
-      return unless element
-      
-      result = element/path
-      if (result.is_a? Hpricot::Elements) || (result.is_a? Array)
-        result.map {|item| Element.get(item) }
-      else
-        [Element.get(result)]
-      end
-    end
-
-    # Similar to #get_hash, except an element object must be passed-in.
-    def self.get_hash(element, path='')
-      return unless element
     
-      result = element.at(path)
+    # Get the children element text values in hash format with the element names as the hash keys.
+    def get_hash(path='')
+      result = at(path)
       result.children.inject({}) do |hash, item|
         hash[item.name.to_sym] = item.inner_html
         hash
       end if result
-    end
-    
-    def to_s
-      elem.to_s if elem
-    end
+    end    
   end
+  
+  class Elements
+    def to_a
+      collect {|i| i.inner_html }
+    end
+  end    
 end
