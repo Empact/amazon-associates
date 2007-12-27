@@ -1,4 +1,6 @@
-require File.dirname(__FILE__) + '/../test_helper'
+dirname = File.dirname(__FILE__) 
+require File.join(dirname, '../test_helper')
+require File.join(dirname, '../../lib/amazon/ecs')
 
 class Amazon::EcsTest < Test::Unit::TestCase
 
@@ -43,6 +45,12 @@ class Amazon::EcsTest < Test::Unit::TestCase
     assert resp.is_valid_request?
   end
   
+  def test_item_search_fake_country_should_throw
+    assert_raises Amazon::RequestError do
+      Amazon::Ecs.item_search('ruby', :country => :asfdkjjk)
+    end
+  end
+  
   def test_item_search_by_author
     resp = Amazon::Ecs.item_search('dave', :type => :author)
     assert resp.is_valid_request?
@@ -51,23 +59,34 @@ class Amazon::EcsTest < Test::Unit::TestCase
   def test_item_get
     resp = Amazon::Ecs.item_search("0974514055")
     item = resp.items.first
-        
+    
     # test get
     assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition", 
       item.get("itemattributes/title")
       
     # test get_array
     assert_equal ['Dave Thomas', 'Chad Fowler', 'Andy Hunt'], 
-      (item/"author").to_a
+      item.get("author")
 
     # test get_hash
-    small_image = item.get_hash("smallimage")
+    assert_equal({:url => "http://ecx.images-amazon.com/images/I/01H909PG5YL.jpg",
+                  :height => {:value => "75", :attributes => {:units => 'pixels'}},
+                  :width => {:value => "59", :attributes => {:units => 'pixels'}}},
+      item.get_hash("smallimage"))
     
-    assert_equal 3, small_image.keys.size
-    assert_equal "http://ecx.images-amazon.com/images/I/01H909PG5YL.jpg", small_image[:url]
-    assert_equal "75", small_image[:height]
-    assert_equal "59", small_image[:width]
-    
+    # when <listmanialists> contains a bunch of <listmanialist>s, return an array
+    assert_equal [{:listid => "R2IJ2M3X3ITVAR", :listname => "The path to enlightenment"},
+                  {:listid => "R3MGYO2P65FC8J", :listname => "Ruby Books"},
+                  {:listid => "R3AEQKTMFEETCN", :listname => "Ruby &amp; Rails From Novice To Expert"},
+                  {:listid => "R2VY37TQWQM0VJ", :listname => "Computer Science classics"},
+                  {:listid => "R3DB3MYO22PHZ6", :listname => "Ruby for Linguistics"},
+                  {:listid => "R192F79G3UXHJ5", :listname => "Programming Books"},
+                  {:listid => "R1L6QNM215M7FB", :listname => "Ruby/Ruby on Rails"},
+                  {:listid => "RROZA1M8ZJVR2",  :listname => "Some books on web development"},
+                  {:listid => "RDZIIJ8YUICL1",  :listname => "Programmer's Companion"},
+                  {:listid => "R26F0LAW83WGCD", :listname => "Starting a software company"} ],
+      item.get_hash('listmanialists')
+
     # test /
     (item/"editorialreview").each do |review|
       # returns unescaped HTML content, Hpricot escapes all text values

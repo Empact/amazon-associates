@@ -1,26 +1,3 @@
-#--
-# Copyright (c) 2006 Herryanto Siatono, Pluit Solutions
-#
-# Permission is hereby granted, free of charge, to any person obtaining
-# a copy of this software and associated documentation files (the
-# "Software"), to deal in the Software without restriction, including
-# without limitation the rights to use, copy, modify, merge, publish,
-# distribute, sublicense, and/or sell copies of the Software, and to
-# permit persons to whom the Software is furnished to do so, subject to
-# the following conditions:
-#
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#++
-
 require 'net/http'
 require 'hpricot'
 require 'cgi'
@@ -102,7 +79,7 @@ module Amazon
 
       # Return true if response has an error.
       def has_error?
-        !(error.nil? || error.empty?)
+        !error.empty?
       end
 
       # Return error message.
@@ -142,25 +119,27 @@ module Amazon
         end
       end
       
-    private 
-      def self.prepare_url(opts)
-        country = opts.delete(:country)
-        country = (country.nil?) ? 'us' : country
-        request_url = SERVICE_URLS[country.to_sym]
-        raise Amazon::RequestError, "Invalid country '#{country}'" unless request_url
-        
-        qs = ''
-        opts.each_pair do |k,v|
-          next unless v
-          v = v.join(',') if v.is_a? Array
-          qs << "&#{camelize(k.to_s)}=#{URI.encode(v.to_s)}"
-        end
-        "#{request_url}#{qs}"
+  private 
+    def self.prepare_url(opts)
+      country = opts.delete(:country) || 'us'
+      request_url = SERVICE_URLS.fetch(country.to_sym) do
+        raise Amazon::RequestError, "Invalid country '#{country}'"
       end
       
-      def self.camelize(s)
-        s.to_s.gsub(/\/(.?)/) { "::" + $1.upcase }.gsub(/(^|_)(.)/) { $2.upcase }
-      end
+      qs = ''
+      opts.each_pair do |k,v|
+        next unless v
+        v = v.join(',') if v.is_a? Array
+        qs << "&#{k.to_s.camelize}=#{URI.encode(v.to_s)}"
+      end      
+      "#{request_url}#{qs}"
+    end
+  end
+end
+
+class String
+  def camelize
+    gsub(/\/(.?)/) { "::" + $1.upcase }.gsub(/(^|_)(.)/) { $2.upcase }
   end
 end
 
@@ -169,8 +148,8 @@ module Hpricot
   module Traverse
     # Get the text value of the given path, leave empty to retrieve current element value.
     def get(path='')
-      result = at(path)
-      result.inner_html if result
+      result = (self/path).collect {|i| i.inner_html }
+      (result.size == 1) ? result.first : result
     end
     
     # Get the unescaped HTML text of the given path.
@@ -187,11 +166,5 @@ module Hpricot
         hash
       end if result
     end    
-  end
-  
-  class Elements
-    def to_a
-      collect {|i| i.inner_html }
-    end
-  end    
+  end  
 end
