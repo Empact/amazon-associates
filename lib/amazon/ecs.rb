@@ -22,11 +22,6 @@ module Amazon
     # see http://railstips.org/2006/11/18/class-and-instance-variables-in-ruby
     class << self; attr_accessor :debug, :options; end
 
-    def self.configure(&block)
-      raise ArgumentError, "Block is required." unless block_given?
-      yield @options
-    end
-    
     # Search amazon items with search terms. Default search index option is 'Books'.
     # For other search type other than keywords, please specify :type => [search type param name].
     def self.item_search(terms, opts = {})
@@ -135,9 +130,31 @@ module Amazon
       "#{request_url}#{qs}"
     end
   end
+  
+  class Element < Hash
+    def initialize(value, attributes = {})
+      self[:value] = value
+      self[:attributes] = attributes
+    end
+    
+    def value
+      self[:value]
+    end
+    
+    def attributes
+      self[:attributes]
+    end
+    
+    def method_missing(meth, *args)
+      self[:value].fetch(meth) do
+        raise ArgumentError, "#{meth} is not a part of this element's value"
+      end 
+    end
+  end
 end
 
 class String
+  # TODO: No need to redefine this from the Rails equivalent
   def camelize
     gsub(/\/(.?)/) { "::" + $1.upcase }.gsub(/(^|_)(.)/) { $2.upcase }
   end
@@ -160,11 +177,33 @@ module Hpricot
     
     # Get the children element text values in hash format with the element names as the hash keys.
     def get_hash(path='')
-      result = at(path)
-      result.children.inject({}) do |hash, item|
-        hash[item.name.to_sym] = item.inner_html
-        hash
-      end if result
-    end    
-  end  
+      if result = at(path)        
+        attrs = result.attributes.inject({}) do |hash, attr|
+          hash[attr[0].to_sym] = attr[1].to_s; hash          
+        end
+        
+        value = parse_children(result)
+        
+        (attrs.empty?) ? value : Amazon::Element.new(value, attrs)
+      end
+    end
+  private
+    # TODO: Should go in element?
+    def parse_children(result)
+      children = result.children
+      if children.size == 1 and children.first.is_a? Text
+        children.first.to_s
+      else
+        result = children.inject({}) do |hash, item|
+          name = item.name.to_sym
+          hash[name] ||= []
+          hash[name] << item.get_hash
+          hash
+        end
+        
+        result.each_pair {|key, value| result[key] = value[0] if value.size == 1 }
+      end      
+    end
+  end
 end
+
