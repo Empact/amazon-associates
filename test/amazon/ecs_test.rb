@@ -27,16 +27,15 @@ class Amazon::EcsTest < Test::Unit::TestCase
   end
 
   def test_item_search_with_invalid_request
-    resp = Amazon::Ecs.item_search(nil)
-    assert !resp.is_valid_request?
+    assert_raise Amazon::RequiredParameterMissing do
+      Amazon::Ecs.item_search(nil)
+    end
   end
 
   def test_item_search_with_no_result
-    resp = Amazon::Ecs.item_search('afdsafds')
-    
-    assert resp.is_valid_request?
-    assert_equal "We did not find any matches for your request.", 
-      resp.error
+    assert_raise Amazon::ItemNotFound, ' We did not find any matches for your request.' do
+      Amazon::Ecs.item_search('afdsafds')
+    end
   end
   
   def test_item_search_uk
@@ -45,7 +44,7 @@ class Amazon::EcsTest < Test::Unit::TestCase
   end
   
   def test_item_search_fake_country_should_throw
-    assert_raises Amazon::RequestError do
+    assert_raise Amazon::RequestError do
       Amazon::Ecs.item_search('ruby', :country => :asfdkjjk)
     end
   end
@@ -119,16 +118,15 @@ class Amazon::EcsTest < Test::Unit::TestCase
   end
   
   def test_item_lookup_with_invalid_request
-    resp = Amazon::Ecs.item_lookup(nil)
-    assert resp.has_error?
-    assert resp.error
+    assert_raise Amazon::RequiredParameterMissing, 'Your request is missing required parameters. Required parameters include ItemId.' do
+      Amazon::Ecs.item_lookup(nil)
+    end
   end
 
   def test_item_lookup_with_no_result
-    resp = Amazon::Ecs.item_lookup('abc')
-    
-    assert resp.is_valid_request?
-    assert_match(/ABC is not a valid value for ItemId/, resp.error)
+    assert_raise Amazon::InvalidParameterValue, 'ABC is not a valid value for ItemId. Please change this value and retry your request.' do
+      Amazon::Ecs.item_lookup('abc')
+    end
   end  
   
   def test_hpricot_extensions

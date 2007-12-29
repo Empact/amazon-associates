@@ -5,6 +5,20 @@ require 'cgi'
 module Amazon
   class RequestError < StandardError; end
   
+  class InvalidParameterValue < ArgumentError; end
+  class ParameterOutOfRange < InvalidParameterValue; end
+  class RequiredParameterMissing < ArgumentError; end
+  class ItemNotFound < StandardError; end
+  
+  # Map AWS error types to ruby exceptions
+  ERROR = {
+    'AWS.InvalidParameterValue' => InvalidParameterValue,
+    'AWS.MissingParameters' => RequiredParameterMissing,
+    'AWS.MinimumParameterRequirement' => RequiredParameterMissing,
+    'AWS.ECommerceService.NoExactMatches' => ItemNotFound,
+    'AWS.ParameterOutOfRange' => ParameterOutOfRange
+  }  
+  
   class Ecs
     SERVICE_URLS = {
         :us => 'http://webservices.amazon.com/onca/xml?Service=AWSECommerceService',
@@ -65,6 +79,7 @@ module Amazon
       # XML input is in string format
       def initialize(xml)
         @doc = Hpricot(xml)
+        raise error if error
       end
 
       # Return true if request is valid.
@@ -72,14 +87,16 @@ module Amazon
         (@doc/"isvalid").inner_html == "True"
       end
 
-      # Return true if response has an error.
-      def has_error?
-        !error.empty?
-      end
-
       # Return error message.
       def error
-        @doc.get('error/message')
+        unless (message = @doc.get('error/message')).empty?
+	        code = @doc.get('error/code')
+	        if exception = ERROR[code]
+	          exception.new(message)
+	        else
+	          RuntimeError.new("#{code}: #{message}")
+	        end
+        end
       end
       
       def items
@@ -133,20 +150,20 @@ module Amazon
   
   class Element < Hash
     def initialize(value, attributes = {})
-      self[:value] = value
-      self[:attributes] = attributes
+      merge! :value => value,
+             :attributes => attributes
     end
     
     def value
-      self[:value]
-    end
-    
-    def attributes
-      self[:attributes]
-    end
+       self[:value]
+     end
+     
+     def attributes
+       self[:attributes]
+     end
     
     def method_missing(meth, *args)
-      self[:value].fetch(meth) do
+      value.fetch(meth) do
         raise ArgumentError, "#{meth} is not a part of this element's value"
       end 
     end
@@ -179,7 +196,7 @@ module Hpricot
     def get_hash(path='')
       if result = at(path)        
         attrs = result.attributes.inject({}) do |hash, attr|
-          hash[attr[0].to_sym] = attr[1].to_s; hash          
+          hash[attr[0].to_sym] = attr[1].to_s; hash
         end
         
         value = parse_children(result)
