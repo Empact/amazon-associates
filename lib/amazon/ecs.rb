@@ -1,6 +1,17 @@
+require 'rubygems'
+require 'active_support'
 require 'net/http'
 require 'hpricot'
 require 'cgi'
+
+class OpenHash < Hash
+  def method_missing_with_attributes_query(meth, *args)
+    fetch(meth) do
+      method_missing_without_attributes_query(meth)
+    end
+  end
+  alias_method_chain :method_missing, :attributes_query  
+end
 
 module Amazon
   class RequestError < StandardError; end
@@ -147,33 +158,12 @@ module Amazon
       "#{request_url}#{qs}"
     end
   end
-  
-  class Element < Hash
+
+  class Element < OpenHash
     def initialize(value, attributes = {})
       merge! :value => value,
              :attributes => attributes
     end
-    
-    def value
-       self[:value]
-     end
-     
-     def attributes
-       self[:attributes]
-     end
-    
-    def method_missing(meth, *args)
-      value.fetch(meth) do
-        raise ArgumentError, "#{meth} is not a part of this element's value"
-      end 
-    end
-  end
-end
-
-class String
-  # TODO: No need to redefine this from the Rails equivalent
-  def camelize
-    gsub(/\/(.?)/) { "::" + $1.upcase }.gsub(/(^|_)(.)/) { $2.upcase }
   end
 end
 
