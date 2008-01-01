@@ -1,6 +1,6 @@
 dirname = File.dirname(__FILE__) 
 require File.join(dirname, '../test_helper')
-require File.join(dirname, '../../lib/amazon/ecs')
+require File.join(dirname, '../../lib/amazon/a2s')
 
 class Amazon::EcsTest < Test::Unit::TestCase
 

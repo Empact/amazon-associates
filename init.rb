@@ -1,1 +1,1 @@
-require 'amazon/ecs'
+require 'amazon/a2s'

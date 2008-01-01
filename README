@@ -1,4 +1,4 @@
-== amazon-ecs
+== amazon-a2s
 
 Generic Amazon E-commerce REST API using Hpricot with configurable 
 default options and method call options. Uses Response and 
@@ -12,15 +12,15 @@ If in the future, there is a change in REST XML output structure,
 no changes will be required on <tt>amazon-ecs</tt> library, 
 instead you just need to change the element path.
 
-Version: 0.5.1
+Version: 0.6
 
 == INSTALLATION
 
-  $ gem install amazon-ecs
+  $ gem install amazon-a2s
 
 == EXAMPLE
 
-    require 'amazon/ecs'
+    require 'amazon/a2s'
 	
     # set the default options; options will be camelized and converted to REST request parameters.
     Amazon::Ecs.options = {:aWS_access_key_id => [your developer token]}
