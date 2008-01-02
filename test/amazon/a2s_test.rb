@@ -66,13 +66,21 @@ class Amazon::EcsTest < Test::Unit::TestCase
       item.get("author")
   end
 
-  def test_get_hash_handles_attributes
-    item = Amazon::Ecs.item_search("0974514055").items.first
-
-    assert_equal({:url => "http://ecx.images-amazon.com/images/I/01H909PG5YL.jpg",
-                  :height => {:value => "75", :attributes => {:units => 'pixels'}},
-                  :width => {:value => "59", :attributes => {:units => 'pixels'}}},
+  def test_get_hash_handles_specific_types
+    item = Amazon::Ecs.item_search('ipod', :search_index => 'Merchants', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.first
+    
+    # Measurements
+    assert_equal({:url => "http://ecx.images-amazon.com/images/I/01Hwx6M-XEL.jpg",
+                  :height => Amazon::Measurement.new(75, 'pixels'),
+                  :width => Amazon::Measurement.new(62, 'pixels')},
       item.get_hash("smallimage"))
+    
+    # bools
+    assert_equal true, item.get_hash('iseligibleforsupersavershipping')
+    assert_equal false, item.get_hash('batteriesincluded')
+    
+    # attributes
+    assert_equal({:category=>"primary"}, item.get_hash('imageset')[:attributes])
   end
   
   def test_get_hash_makes_arrays_from_lists    

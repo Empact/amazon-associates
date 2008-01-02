@@ -13,6 +13,20 @@ class OpenHash < Hash
   alias_method_chain :method_missing, :attributes_query  
 end
 
+class Float
+  def whole?
+    (self % 1) < 0.0001
+  end
+end
+
+class String
+  def to_bool
+    return false if self == '0'
+    return true  if self == '1'
+    raise ArgumentError, "String '#{self}' is not convertible to bool"
+  end
+end
+
 module Amazon
   class RequestError < StandardError; end
   
@@ -101,12 +115,12 @@ module Amazon
       # Return error message.
       def error
         unless (message = @doc.get('error/message')).empty?
-	        code = @doc.get('error/code')
-	        if exception = ERROR[code]
-	          exception.new(message)
-	        else
-	          RuntimeError.new("#{code}: #{message}")
-	        end
+          code = @doc.get('error/code')
+          if exception = ERROR[code]
+            exception.new(message)
+          else
+            RuntimeError.new("#{code}: #{message}")
+          end
         end
       end
       
@@ -165,6 +179,41 @@ module Amazon
              :attributes => attributes
     end
   end
+  
+  class Measurement
+    attr_reader :value, :units
+    
+    def initialize(value, units = nil)
+      if value.is_a? Hpricot::Elem::Trav
+        units = value.attributes['units']
+        value = value.inner_html
+      end
+      
+      @value = value.to_f
+      @units = units.to_s
+      
+      if @units.starts_with? 'hundredths-'
+        @value /= 100.0
+        @units = @units.split('hundredths-')[1]
+      end      
+    end
+    
+    def to_s
+      value = @value.whole? ? @value.to_i : @value
+      #singularize here to avoid comparison problems
+      units = @value == 1 ? @units.singularize : @units
+      [value, units].join(' ')
+    end
+    alias_attribute :inspect, :to_s
+    
+    def to_i
+      @value.round
+    end
+    
+    def ==(other)
+      @value == other.value and @units == other.units
+    end
+  end
 end
 
 module Hpricot
@@ -184,14 +233,22 @@ module Hpricot
     
     # Get the children element text values in hash format with the element names as the hash keys.
     def get_hash(path='')
-      if result = at(path)        
-        attrs = result.attributes.inject({}) do |hash, attr|
-          hash[attr[0].to_sym] = attr[1].to_s; hash
+      if result = at(path)
+        # TODO: price, date, int, &c
+        if ['width', 'height', 'length', 'weight'].include? result.name
+          Amazon::Measurement.new(result)
+        elsif ['batteriesincluded', 'iseligibleforsupersavershipping', 'isautographed', 'ismemorabilia'].include? result.name
+          result.inner_text.to_bool
+        else
+          # TODO: Use to_h here?
+          attrs = result.attributes.inject({}) do |hash, attr|
+            hash[attr[0].to_sym] = attr[1].to_s; hash
+          end
+        
+          value = parse_children(result)
+        
+          (attrs.empty?) ? value : Amazon::Element.new(value, attrs)
         end
-        
-        value = parse_children(result)
-        
-        (attrs.empty?) ? value : Amazon::Element.new(value, attrs)
       end
     end
   private
