@@ -4,6 +4,21 @@ require 'net/http'
 require 'hpricot'
 require 'cgi'
 
+require 'pp'
+require 'stringio'
+
+def my_pp(*args)
+  old_out = $stdout
+  begin
+    s=StringIO.new
+    $stdout=s
+    pp(*args)
+  ensure
+    $stdout=old_out
+  end
+  s.string
+end
+
 class OpenHash < Hash
   def method_missing_with_attributes_query(meth, *args)
     fetch(meth) do
@@ -114,7 +129,7 @@ module Amazon
 
       # Return error message.
       def error
-        unless (message = @doc.get('error/message')).empty?
+        if message = @doc.get('error/message')
           code = @doc.get('error/code')
           if exception = ERROR[code]
             exception.new(message)
@@ -181,14 +196,10 @@ module Amazon
   end
   
   class Measurement
+    include Comparable
     attr_reader :value, :units
     
-    def initialize(value, units = nil)
-      if value.is_a? Hpricot::Elem::Trav
-        units = value.attributes['units']
-        value = value.inner_html
-      end
-      
+    def initialize(value, units)
       @value = value.to_f
       @units = units.to_s
       
@@ -210,9 +221,34 @@ module Amazon
       @value.round
     end
     
-    def ==(other)
-      @value == other.value and @units == other.units
+    def <=>(other)
+      return nil unless @units == other.units
+      
+      @value <=> other.value 
     end
+  end
+  
+  class Price
+    include Comparable
+    attr_reader :cents, :currency
+    
+    def initialize(str, cents = nil, currency = nil)
+      @str = str.to_s
+      @cents = cents.to_i if cents
+      @currency = currency.to_s if currency
+    end
+    
+    def <=>(other)
+      return nil if @currency.nil? or @cents.nil?
+      return nil if @currency != other.currency
+      
+      @cents <=> other.cents
+    end
+    
+    def to_s
+      @str
+    end
+    alias_attribute :inspect, :to_s
   end
 end
 
@@ -221,8 +257,10 @@ module Hpricot
   module Traverse
     # Get the text value of the given path, leave empty to retrieve current element value.
     def get(path='')
-      result = (self/path).collect {|i| i.inner_html }
-      (result.size == 1) ? result.first : result
+      result = (self/path).collect {|i| i.inner_html.to_s }
+      return nil if result.empty?
+      return result.first if result.size == 1
+      return result
     end
     
     # Get the unescaped HTML text of the given path.
@@ -234,11 +272,15 @@ module Hpricot
     # Get the children element text values in hash format with the element names as the hash keys.
     def get_hash(path='')
       if result = at(path)
-        # TODO: price, date, int, &c
+        # TODO: date?, image? &c
         if ['width', 'height', 'length', 'weight'].include? result.name
-          Amazon::Measurement.new(result)
+          Amazon::Measurement.new(result.inner_html, result.attributes['units'])
         elsif ['batteriesincluded', 'iseligibleforsupersavershipping', 'isautographed', 'ismemorabilia'].include? result.name
           result.inner_text.to_bool
+        elsif result.name.starts_with? 'total'
+          result.inner_text.to_i
+        elsif result.name.ends_with? 'price'
+          Amazon::Price.new(result.get('formattedprice'), result.get('amount'), result.get('currencycode'))
         else
           # TODO: Use to_h here?
           attrs = result.attributes.inject({}) do |hash, attr|
@@ -266,8 +308,7 @@ module Hpricot
         end
         
         result.each_pair {|key, value| result[key] = value[0] if value.size == 1 }
-      end      
+      end
     end
   end
 end
-

@@ -79,8 +79,20 @@ class Amazon::EcsTest < Test::Unit::TestCase
     assert_equal true, item.get_hash('iseligibleforsupersavershipping')
     assert_equal false, item.get_hash('batteriesincluded')
     
+    # price
+    assert_equal Amazon::Price.new('$149.00', 14900, 'USD'), item.get_hash('listprice')
+    
+    # integers
+    assert_equal 29, item.get_hash('totalnew')
+    assert_equal 1, item.get_hash('totaloffers')
+    
     # attributes
     assert_equal({:category=>"primary"}, item.get_hash('imageset')[:attributes])
+  end
+  
+  def test_price_should_handle_Price_Too_Low_To_Display
+    item = Amazon::Ecs.item_lookup('B000W79GQA', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.first
+    assert item.get_hash
   end
   
   def test_get_hash_makes_arrays_from_lists    
