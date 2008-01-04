@@ -69,11 +69,13 @@ class Amazon::EcsTest < Test::Unit::TestCase
   def test_get_hash_handles_specific_types
     item = Amazon::Ecs.item_search('ipod', :search_index => 'Merchants', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.first
     
-    # Measurements
-    assert_equal({:url => "http://ecx.images-amazon.com/images/I/01Hwx6M-XEL.jpg",
-                  :height => Amazon::Measurement.new(75, 'pixels'),
-                  :width => Amazon::Measurement.new(62, 'pixels')},
+    # Measurements & Image
+    assert_equal(Amazon::Image.new("http://ecx.images-amazon.com/images/I/01Hwx6M-XEL.jpg",
+														      Amazon::Measurement.new(62, 'pixels'),
+														      Amazon::Measurement.new(75, 'pixels')),
       item.get_hash("smallimage"))
+    
+    assert_equal "62x75", item.get_hash("smallimage").size
     
     # bools
     assert_equal true, item.get_hash('iseligibleforsupersavershipping')

@@ -250,6 +250,35 @@ module Amazon
     end
     alias_attribute :inspect, :to_s
   end
+  
+  class Image
+    attr_reader :url, :width, :height
+    
+    def initialize(url, width, height)
+      @url = url
+      width = Measurement.new(width, 'pixels') unless width.is_a? Measurement
+      @width = width
+      height = Measurement.new(height, 'pixels') unless height.is_a? Measurement
+      @height = height
+    end
+    
+    def ==(other)
+      return nil unless other.is_a? Image
+      @url == other.url and @width == other.width and @height == other.height
+    end
+    
+    def size
+      unless height.units == 'pixels' and width.units == 'pixels'
+        raise 'size not available for images not denominated in pixels'
+      end
+      
+      "#{width.value.round}x#{height.value.round}"
+    end
+    
+    def inspect
+      sprintf("#<%s: %s,%sx%s>", self.class.to_s, self.url, self.width, self.height)
+    end    
+  end
 end
 
 module Hpricot
@@ -281,6 +310,8 @@ module Hpricot
           result.inner_text.to_i
         elsif result.name.ends_with? 'price'
           Amazon::Price.new(result.get('formattedprice'), result.get('amount'), result.get('currencycode'))
+        elsif result.name.ends_with? 'image'
+          Amazon::Image.new(result.get('url'), result.get('width'), result.get('height')) 
         else
           # TODO: Use to_h here?
           attrs = result.attributes.inject({}) do |hash, attr|
