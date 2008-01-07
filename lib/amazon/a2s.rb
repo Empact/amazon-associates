@@ -279,6 +279,23 @@ module Amazon
       sprintf("#<%s: %s,%sx%s>", self.class.to_s, self.url, self.width, self.height)
     end    
   end
+  
+  class Ordinal
+    attr_reader :value
+
+    def initialize(value)
+      @value = value.to_i
+    end
+
+    def to_s
+      @value.ordinalize
+    end
+    alias_attribute :inspect, :to_s
+    
+    def ==(other)
+      @value == other
+    end
+  end
 end
 
 module Hpricot
@@ -306,7 +323,9 @@ module Hpricot
           Amazon::Measurement.new(result.inner_html, result.attributes['units'])
         elsif ['batteriesincluded', 'iseligibleforsupersavershipping', 'isautographed', 'ismemorabilia'].include? result.name
           result.inner_text.to_bool
-        elsif result.name.starts_with? 'total'
+        elsif result.name == 'edition'
+          Amazon::Ordinal.new(result.inner_text.to_i) 
+        elsif result.name.starts_with? 'total' or result.name.starts_with? 'number'
           result.inner_text.to_i
         elsif result.name.ends_with? 'price'
           Amazon::Price.new(result.get('formattedprice'), result.get('amount'), result.get('currencycode'))
