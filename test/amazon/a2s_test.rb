@@ -54,60 +54,61 @@ class Amazon::EcsTest < Test::Unit::TestCase
     assert resp.is_valid_request?
   end
   
-  def test_item_get
+  def test_text_at
     item = Amazon::Ecs.item_search("0974514055").items.first
     
     # one item
     assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition", 
-      item.get("itemattributes/title")
+      item.text_at("itemattributes/title")
       
     # multiple items
     assert_equal ['Dave Thomas', 'Chad Fowler', 'Andy Hunt'], 
-      item.get("author")
+      item.texts_at("author")
       
     #ordinals
-    assert_equal Amazon::Ordinal.new(2), item.get_hash('edition')
+    assert_equal Amazon::Ordinal.new(2), item.hash_at('edition')
   end
 
-  def test_get_hash_handles_specific_types
+  def test_hash_at_handles_specific_types
     item = Amazon::Ecs.item_search('ipod', :search_index => 'Merchants', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.first
     
     # Measurements & Image
     assert_equal(Amazon::Image.new("http://ecx.images-amazon.com/images/I/01Hwx6M-XEL.jpg",
 														      Amazon::Measurement.new(62, 'pixels'),
 														      Amazon::Measurement.new(75, 'pixels')),
-      item.get_hash("smallimage"))
+      item.hash_at("smallimage"))
     
-    assert_equal "62x75", item.get_hash("smallimage").size
+    assert_equal "62x75", item.hash_at("smallimage").size
     
     # bools
-    assert_equal true, item.get_hash('iseligibleforsupersavershipping')
-    assert_equal false, item.get_hash('batteriesincluded')
+    assert_equal true, item.hash_at('iseligibleforsupersavershipping')
+    assert_equal false, item.hash_at('batteriesincluded')
     
     # price
-    assert_equal Amazon::Price.new('$149.00', 14900, 'USD'), item.get_hash('listprice')
+    assert_equal Amazon::Price.new('$149.00', 14900, 'USD'), item.hash_at('listprice')
     
     # integers
-    assert_instance_of Fixnum, item.get_hash('totalnew')
-    assert_instance_of Fixnum, item.get_hash('totaloffers')
+    assert_instance_of Fixnum, item.hash_at('totalnew')
+    assert_instance_of Fixnum, item.hash_at('totaloffers')
     
     # attributes
-    assert_equal({:category=>"primary"}, item.get_hash('imageset')[:attributes])
+    assert_equal({:category=>"primary"}, item.hash_at('imageset')[:attributes])
     
     # ordinals
-    # in test_item_get, above
+    # in test_text_at, above
   end
   
   def test_price_should_handle_Price_Too_Low_To_Display
     item = Amazon::Ecs.item_lookup('B000W79GQA', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.first
-    assert item.get_hash
+    assert item.to_hash
   end
   
-  def test_get_hash_makes_arrays_from_lists    
+  def test_hash_at_makes_arrays_from_lists    
     item = Amazon::Ecs.item_search("0974514055").items.first
 
     # when <listmanialists> contains a bunch of <listmanialist>s, return an array
     assert_equal({:listmanialist => [
+                     {:listid=>"RCWKKCCVL5FGL",  :listname=>"Survey of programming languages/paradigms"},                     
                      {:listid=>"R2IJ2M3X3ITVAR", :listname=>"The path to enlightenment"},
                      {:listid=>"R3MGYO2P65FC8J", :listname=>"Ruby Books"},
                      {:listid=>"R3AEQKTMFEETCN", :listname=>"Ruby & Rails From Novice To Expert"},
@@ -116,25 +117,24 @@ class Amazon::EcsTest < Test::Unit::TestCase
                      {:listid=>"R192F79G3UXHJ5", :listname=>"Programming Books"},
                      {:listid=>"R1L6QNM215M7FB", :listname=>"Ruby/Ruby on Rails"},
                      {:listid=>"RROZA1M8ZJVR2",  :listname=>"Some books on web development"},
-                     {:listid=>"RDZIIJ8YUICL1",  :listname=>"Programmer's Companion"},
-                     {:listid=>"R26F0LAW83WGCD", :listname=>"Starting a software company"}]},
-       item.get_hash('listmanialists'))
+                     {:listid=>"RDZIIJ8YUICL1",  :listname=>"Programmer's Companion"}]},
+       item.hash_at('listmanialists'))
     
     # when there's a single child, make sure it's parsed rather than returned as a string
     assert_equal({:editorialreview=>
                       {:content=>
                         "Ruby is an increasingly popular, fully object-oriented dynamic programming language, hailed by many practitioners as the finest and most useful language available today.  When Ruby first burst onto the scene in the Western world, the Pragmatic Programmers were there with the definitive reference manual, <i>Programming Ruby: The Pragmatic Programmer's Guide</i>.<br /> <br /> Now in its second edition, author Dave Thomas has expanded the famous Pickaxe book with over 200 pages of new content, covering all the improved language features of Ruby 1.8 and standard library modules. The Pickaxe contains four major sections: <ul><li>An acclaimed tutorial on using Ruby. </li><li>The definitive reference to the language. </li><li>Complete documentation on all built-in classes, modules, and methods </li><li>Complete descriptions of all 98 standard libraries.</li></ul><br /> <br /> If you enjoyed the First Edition, you'll appreciate the expanded content, including enhanced coverage of installation, packaging, documenting Ruby source code, threading and synchronization, and enhancing Ruby's capabilities using C-language extensions. Programming for the World Wide Web is easy in Ruby, with new chapters on XML/RPC, SOAP, distributed Ruby, templating systems, and other web services.  There's even a new chapter on unit testing.<br /> <br /> This is the definitive reference manual for Ruby, including a description of all the standard library modules, a complete reference to all built-in classes and modules (including more than 250 significant changes since the First Edition). Coverage of other features has grown tremendously, including details on how to harness the sophisticated capabilities of irb, so you can dynamically examine and experiment with your running code. \"Ruby is a wonderfully powerful and useful language, and whenever I'm working with it this book is at my side\" --Martin Fowler, Chief Scientist, ThoughtWorks",
                        :source=>"Book Description"}},
-      item.get_hash('editorialreviews'))
+      item.hash_at('editorialreviews'))
   end
 
-  def test_get_unescaped
+  def test_unescaped_at
     item = Amazon::Ecs.item_search("0974514055").items.first
       
     (item/"editorialreview").each do |review|
       # returns unescaped HTML content, Hpricot escapes all text values
-      assert review.get_unescaped('source')
-      assert review.get_unescaped('content')
+      assert review.unescaped_at('source')
+      assert review.unescaped_at('content')
     end
   end
   
@@ -142,7 +142,7 @@ class Amazon::EcsTest < Test::Unit::TestCase
   def test_item_lookup
     resp = Amazon::Ecs.item_lookup('0974514055')
     assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition", 
-    resp.items.first.get("itemattributes/title")
+    resp.items.first.text_at("itemattributes/title")
   end
   
   def test_item_lookup_with_invalid_request
@@ -159,12 +159,12 @@ class Amazon::EcsTest < Test::Unit::TestCase
   
   def test_hpricot_extensions
     resp = Amazon::Ecs.item_lookup('0974514055')
-    title = resp.items.first.get("itemattributes/title")
+    title = resp.items.first.text_at("itemattributes/title")
     authors = resp.items.first/"author"
     
     assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition", title
     assert authors.is_a?(Array)
     assert 3, authors.size
-    assert_equal "Dave Thomas", authors.first.get
+    assert_equal "Dave Thomas", authors.first.to_text
   end  
 end
