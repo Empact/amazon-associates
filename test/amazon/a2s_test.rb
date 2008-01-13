@@ -15,14 +15,14 @@ class Amazon::EcsTest < Test::Unit::TestCase
 
   def test_item_search
     resp = Amazon::Ecs.item_search('ruby')
-    assert(resp.is_valid_request?)
+    assert(resp.valid_request?)
     assert(resp.total_results >= 3600)
     assert(resp.total_pages >= 360)
   end
 
   def test_item_search_with_paging
     resp = Amazon::Ecs.item_search('ruby', :item_page => 2)
-    assert resp.is_valid_request?
+    assert resp.valid_request?
     assert 2, resp.item_page
   end
 
@@ -40,7 +40,12 @@ class Amazon::EcsTest < Test::Unit::TestCase
   
   def test_item_search_uk
     resp = Amazon::Ecs.item_search('ruby', :country => :uk)
-    assert resp.is_valid_request?
+    assert resp.valid_request?
+  end
+  
+  def test_item_search_not_keywords
+    resp = Amazon::Ecs.item_search(:author => 'rowling')
+    assert resp.valid_request?
   end
   
   def test_item_search_fake_country_should_throw
@@ -51,7 +56,7 @@ class Amazon::EcsTest < Test::Unit::TestCase
   
   def test_item_search_by_author
     resp = Amazon::Ecs.item_search('dave', :type => :author)
-    assert resp.is_valid_request?
+    assert resp.valid_request?
   end
   
   def test_text_at
@@ -81,8 +86,8 @@ class Amazon::EcsTest < Test::Unit::TestCase
     assert_equal "62x75", item.hash_at("smallimage").size
     
     # bools
-    assert_equal true, item.hash_at('iseligibleforsupersavershipping')
-    assert_equal false, item.hash_at('batteriesincluded')
+    assert_equal true, item.bool_at('iseligibleforsupersavershipping')
+    assert_equal false, item.bool_at('batteriesincluded')
     
     # price
     assert_equal Amazon::Price.new('$149.00', 14900, 'USD'), item.hash_at('listprice')
@@ -101,6 +106,12 @@ class Amazon::EcsTest < Test::Unit::TestCase
   def test_price_should_handle_Price_Too_Low_To_Display
     item = Amazon::Ecs.item_lookup('B000W79GQA', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.first
     assert item.to_hash
+  end
+  
+  def test_hash_at_handles_string_editions
+    Amazon::Ecs.item_search("potter", :item_page => 3, :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.each do |item|
+      assert item.to_hash
+    end
   end
   
   def test_hash_at_makes_arrays_from_lists    
@@ -131,7 +142,7 @@ class Amazon::EcsTest < Test::Unit::TestCase
   def test_unescaped_at
     item = Amazon::Ecs.item_search("0974514055").items.first
       
-    (item/"editorialreview").each do |review|
+    item.search("editorialreview").each do |review|
       # returns unescaped HTML content, Hpricot escapes all text values
       assert review.unescaped_at('source')
       assert review.unescaped_at('content')
@@ -155,7 +166,7 @@ class Amazon::EcsTest < Test::Unit::TestCase
     assert_raise Amazon::InvalidParameterValue, 'ABC is not a valid value for ItemId. Please change this value and retry your request.' do
       Amazon::Ecs.item_lookup('abc')
     end
-  end  
+  end
   
   def test_hpricot_extensions
     resp = Amazon::Ecs.item_lookup('0974514055')

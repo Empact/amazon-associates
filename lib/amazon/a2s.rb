@@ -20,6 +20,12 @@ def pp_to_string(*args)
   s.string
 end
 
+class Object # http://whytheluckystiff.net/articles/seeingMetaclassesClearly.html
+  def meta_def name, &blk
+    (class << self; self; end).instance_eval { define_method name, &blk }
+  end
+end
+
 class OpenHash < Hash
   def method_missing_with_attributes_query(meth, *args)
     fetch(meth) do
@@ -51,7 +57,9 @@ module Amazon
     'AWS.ECommerceService.NoExactMatches' => ItemNotFound,
     'AWS.ParameterOutOfRange' => ParameterOutOfRange,
     'AWS.InvalidOperationParameter'=> InvalidParameterValue
-  }  
+  }
+  
+  IGNORE_ERRORS = ['AWS.ECommerceService.NoSimilarities']
 
   class Ecs
     SERVICE_URLS = {
@@ -70,39 +78,29 @@ module Amazon
     # see http://railstips.org/2006/11/18/class-and-instance-variables-in-ruby
     class << self; attr_accessor :debug, :options; end
 
-    # Search amazon items with search terms. Default search index option is 'Books'.
-    # For other search type other than keywords, please specify :type => [search type param name].
-    def self.item_search(terms, opts = {})
-      opts[:operation] = 'ItemSearch'
-      opts[:search_index] ||= 'Books'
-
-      if type = opts.delete(:type) 
-        opts[type.to_sym] = terms
-      else 
-        opts[:keywords] = terms
+    def self.request(actions, &block)
+      actions.each_pair do |action, main_arg|
+        meta_def(action) do |*args|
+          opts = args.extract_options!
+          opts[main_arg] = args.first
+          opts[:operation] = action.to_s.camelize
+          
+          yield opts if block_given?
+          
+          send_request(opts)
+        end
       end
-
-      send_request(opts)
-    end
-
-    def self.similarity_lookup(item_id, opts = {})
-      opts[:operation] = 'SimilarityLookup'
-      opts[:item_id] = item_id
-      
-      send_request(opts)
     end
     
-    # Search an item by ASIN no.
-    def self.item_lookup(item_id, opts = {})
-      opts[:operation] = 'ItemLookup'
-      opts[:item_id] = item_id
-
-      send_request(opts)
-    end    
+    request :item_search => :keywords do |opts|
+      opts[:search_index] ||= 'Books'
+    end
+    request :similarity_lookup => :item_id,
+            :item_lookup => :item_id
 
     # Generic send request to ECS REST service. You have to specify the :operation parameter.
     def self.send_request(opts)
-      opts = self.options.merge(opts)
+      opts.reverse_merge! self.options
       request_url = prepare_url(opts)
       log "Request URL: #{request_url}"
       
@@ -124,14 +122,14 @@ module Amazon
       end
 
       # Return true if request is valid.
-      def is_valid_request?
-        (@doc/"isvalid").inner_html == "True"
+      def valid_request?
+        @doc.text_at("isvalid") == "True"
       end
 
       # Return error message.
       def error
-        if message = @doc.text_at('error/message')
-          code = @doc.text_at('error/code')
+        if code = @doc.text_at('error/code') and not IGNORE_ERRORS.include? code
+          message = @doc.text_at('error/message')
           if exception = ERROR[code]
             exception.new(message)
           else
@@ -141,7 +139,7 @@ module Amazon
       end
       
       def items
-        @items ||= (@doc/:item)
+        @items ||= @doc.search(:item)
       end
       
       # Return current page no if :item_page option is when initiating the request.
@@ -184,7 +182,7 @@ module Amazon
       qs = ''
       opts.each_pair do |k,v|
         next unless v
-        v = v.join(',') if v.is_a? Array
+        v *= ',' if v.is_a? Array
         qs << "&#{k.to_s.camelize}=#{URI.encode(v.to_s)}"
       end      
       "#{request_url}#{qs}"
@@ -304,84 +302,61 @@ module Hpricot
   
   # Extend with some convenience methods
   module Traverse
+    def self.induce(type, &block)
+      raise ArgumentError, "block missing" unless block_given?
+      
+      type_at, to_type, types_at = "#{type}_at", "to_#{type}", "#{type.to_s.pluralize}_at"
+      if [type_at, to_type, types_at].any? {|m| method_defined?(m) }
+        raise ArgumentError, "some methods already defined"
+      end
+      
+      define_method type_at do |path|
+        result = at(path) and yield result
+      end
+      define_method to_type do
+        method(type_at).call('')
+      end
+      define_method types_at do |path|
+        results = search(path) and results.collect {|r| yield r }
+      end
+    end
+
     # Get the text value of the given path, leave empty to retrieve current element value.
-    def text_at(path)
-      result = at(path) and result.inner_html
+    induce :text do |result|
+      result.inner_html
     end
-    def to_text; text_at(''); end
-    
-    def texts_at(path)
-      result = search(path) and result.collect {|r| r.inner_html }
+
+    induce :int do |result|
+      result = result.inner_html
+      if result.to_i.zero? and !result.starts_with?('0')
+        raise TypeError, "failed to convert String #{result.inspect} into Integer"
+      end
+      result.to_i
     end
-    
-    def int_at(path)
-      if result = text_at(path)
-        int = result.to_i
-        if int == 0 and !result.starts_with?('0')
-          raise TypeError, "failed to convert String #{result.inspect} into Integer"
-        end
-        int
+
+    induce :bool do |result|
+      case result.inner_html
+      when '0': false
+      when '1': true
+      else
+        raise TypeError, "String #{result.inspect} is not convertible to bool"
       end
     end
-    def to_int; int_at(''); end
-    
-    def bool_at(path)
-      if result = text_at(path)
-        return false if result == '0'
-        return true  if result == '1'
-        raise TypeError, "String '#{self}' is not convertible to bool"        
-      end
-    end
-    def to_bool; bool_at(''); end
-    
+
     # Get the unescaped HTML text of the given path.
-    def unescaped_at(path)
-      result = text_at(path) and CGI::unescapeHTML(result)
+    induce :unescaped do |result|
+      CGI::unescapeHTML(result.inner_html)
     end
-    def to_unescaped; unescaped_at(''); end
+
+    induce :element do |result|
+      # TODO: Use to_h here?
+      attrs = result.attributes.inject({}) do |hash, attr|
+        hash[attr[0].to_sym] = attr[1].to_s; hash
+      end
     
-    def elements_at(path)
-      if result = at(path)
-        # TODO: Use to_h here?
-	      attrs = result.attributes.inject({}) do |hash, attr|
-	        hash[attr[0].to_sym] = attr[1].to_s; hash
-	      end
-	    
-	      value = parse_children(result)
-	    
-	      (attrs.empty?) ? value : Element.new(value, attrs)
-      end
-    end
-    def to_elements; elements_at(''); end
-
-    # Get the children element text values in hash format with the element names as the hash keys.
-    def hash_at(path)
-      if result = at(path)
-        # TODO: date?, image? &c
-        if ['width', 'height', 'length', 'weight'].include? result.name
-          Amazon::Measurement.new(result.inner_html, result.attributes['units'])
-        elsif ['batteriesincluded', 'iseligibleforsupersavershipping', 'isautographed', 'ismemorabilia'].include? result.name
-          result.to_bool
-        elsif result.name == 'edition'
-          Amazon::Ordinal.new(result.inner_text.to_i) 
-        elsif result.name.starts_with? 'total' or result.name.starts_with? 'number'
-          result.to_int
-        elsif result.name.ends_with? 'price'
-          Amazon::Price.new(result.text_at('formattedprice'), result.int_at('amount'), result.text_at('currencycode'))
-        elsif result.name.ends_with? 'image'
-          Amazon::Image.new(result.text_at('url'), result.int_at('width'), result.int_at('height')) 
-        else
-          elements_at(path)
-        end
-      end
-    end
-    def to_hash; hash_at(''); end
-
-  private
-    def parse_children(result)
       children = result.children
       if children.size == 1 and children.first.is_a? Text
-        children.first.to_s
+        value = children.first.to_s
       else
         result = children.inject({}) do |hash, item|
           name = item.name.to_sym
@@ -390,8 +365,36 @@ module Hpricot
           hash
         end
         
-        result.each_pair {|key, value| result[key] = value[0] if value.size == 1 }
+        value = result.each_pair {|key, value| result[key] = value[0] if value.size == 1 }
       end
+    
+      (attrs.empty?) ? value : Element.new(value, attrs)
+    end
+
+    # Get the children element text values in hash format with the element names as the hash keys.
+    induce :hash do |result|
+      # TODO: date?, image? &c
+#        raise path + ' ' + result.name
+      if ['width', 'height', 'length', 'weight'].include? result.name
+        Amazon::Measurement.new(result.to_int, result.attributes['units'])
+      elsif ['batteriesincluded', 'iseligibleforsupersavershipping', 'isautographed', 'ismemorabilia'].include? result.name
+        result.to_bool
+      elsif result.name == 'edition'
+        begin
+          Amazon::Ordinal.new(result.to_int)
+        rescue TypeError
+          # a few edition types aren't ordinals (e.g., 1st, 2nd, 3rd), but strings (e.g., "First American Edition")
+          result.to_text
+        end 
+      elsif result.name.starts_with? 'total' or result.name.starts_with? 'number'
+        result.to_int
+      elsif result.name.ends_with? 'price'
+        Amazon::Price.new(result.text_at('formattedprice'), result.int_at('amount'), result.text_at('currencycode'))
+      elsif result.name.ends_with? 'image'
+        Amazon::Image.new(result.text_at('url'), result.int_at('width'), result.int_at('height')) 
+      else
+        result.to_element
+      end      
     end
   end
 end
