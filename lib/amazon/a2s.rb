@@ -56,7 +56,8 @@ module Amazon
     'AWS.MinimumParameterRequirement' => RequiredParameterMissing,
     'AWS.ECommerceService.NoExactMatches' => ItemNotFound,
     'AWS.ParameterOutOfRange' => ParameterOutOfRange,
-    'AWS.InvalidOperationParameter'=> InvalidParameterValue
+    'AWS.InvalidOperationParameter'=> InvalidParameterValue,
+    'AWS.InvalidResponseGroup' => InvalidParameterValue
   }
   
   IGNORE_ERRORS = ['AWS.ECommerceService.NoSimilarities']
@@ -186,6 +187,39 @@ module Amazon
         qs << "&#{k.to_s.camelize}=#{URI.encode(v.to_s)}"
       end      
       "#{request_url}#{qs}"
+    end
+  end
+  
+  class BrowseNode
+    attr_reader :id, :name, :ancestors
+    
+    def initialize(id, name, ancestors)
+      @id = id
+      @name = name
+      @ancestors = ancestors
+    end
+    
+    def to_s
+      "#{@name}#{' : ' + @ancestors.to_s if @ancestors}"
+    end
+    
+    def inspect
+      sprintf("#<%s:%s %s>", self.class.to_s, @id, self)
+    end
+    
+    def ==(other)
+      @id == other.id and @name == other.name
+    end
+    
+    %w{brand type}.each do |name|
+      define_method("#{name}?") do
+        ancestor = instance_variable_get :@ancestors
+	      while ancestor
+	        return true if ancestor.name == name.titleize
+	        ancestor = ancestor.ancestors
+	      end
+        false
+      end
     end
   end
   
@@ -379,6 +413,8 @@ module Hpricot
         Amazon::Measurement.new(result.to_int, result.attributes['units'])
       elsif ['batteriesincluded', 'iseligibleforsupersavershipping', 'isautographed', 'ismemorabilia'].include? result.name
         result.to_bool
+      elsif result.name == 'browsenode'
+        Amazon::BrowseNode.new(result.text_at('browsenodeid'), result.text_at('name'), result.hash_at('ancestors/browsenode'))
       elsif result.name == 'edition'
         begin
           Amazon::Ordinal.new(result.to_int)

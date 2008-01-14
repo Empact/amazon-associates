@@ -168,6 +168,16 @@ class Amazon::EcsTest < Test::Unit::TestCase
     end
   end
   
+  def test_browsenodes
+    item = Amazon::Ecs.item_lookup('B000ROI682', :response_group => 'BrowseNodes').items.first
+    browsenodes = item.hash_at('browsenodes')[:browsenode]
+    assert browsenodes.size > 1 
+    browsenodes.each do |browsenode|
+      assert_kind_of Amazon::BrowseNode, browsenode
+      assert (browsenode.type? or browsenode.brand?), browsenode.to_s
+    end
+  end
+  
   def test_hpricot_extensions
     resp = Amazon::Ecs.item_lookup('0974514055')
     title = resp.items.first.text_at("itemattributes/title")
