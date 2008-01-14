@@ -1,66 +1,66 @@
 dirname = File.dirname(__FILE__) 
 require File.join(dirname, '../test_helper')
-require File.join(dirname, '../../lib/amazon/a2s')
+require File.join(dirname, '../../lib/amazon-a2s')
 
-class Amazon::EcsTest < Test::Unit::TestCase
+class Amazon::A2sTest < Test::Unit::TestCase
 
   AWS_ACCESS_KEY_ID = '0PP7FTN6FM3BZGGXJWG2'
   raise "Please specify set your AWS_ACCESS_KEY_ID" if AWS_ACCESS_KEY_ID.empty?
   
-  Amazon::Ecs.options.merge!(
+  Amazon::A2s.options.merge!(
     :response_group    => 'Large',
     :aWS_access_key_id => AWS_ACCESS_KEY_ID)
 
   ## Test item_search
 
   def test_item_search
-    resp = Amazon::Ecs.item_search('ruby')
+    resp = Amazon::A2s.item_search('ruby')
     assert(resp.valid_request?)
     assert(resp.total_results >= 3600)
     assert(resp.total_pages >= 360)
   end
 
   def test_item_search_with_paging
-    resp = Amazon::Ecs.item_search('ruby', :item_page => 2)
+    resp = Amazon::A2s.item_search('ruby', :item_page => 2)
     assert resp.valid_request?
     assert 2, resp.item_page
   end
 
   def test_item_search_with_invalid_request
     assert_raise Amazon::RequiredParameterMissing do
-      Amazon::Ecs.item_search(nil)
+      Amazon::A2s.item_search(nil)
     end
   end
 
   def test_item_search_with_no_result
     assert_raise Amazon::ItemNotFound, ' We did not find any matches for your request.' do
-      Amazon::Ecs.item_search('afdsafds')
+      Amazon::A2s.item_search('afdsafds')
     end
   end
   
   def test_item_search_uk
-    resp = Amazon::Ecs.item_search('ruby', :country => :uk)
+    resp = Amazon::A2s.item_search('ruby', :country => :uk)
     assert resp.valid_request?
   end
   
   def test_item_search_not_keywords
-    resp = Amazon::Ecs.item_search(:author => 'rowling')
+    resp = Amazon::A2s.item_search(:author => 'rowling')
     assert resp.valid_request?
   end
   
   def test_item_search_fake_country_should_throw
     assert_raise Amazon::RequestError do
-      Amazon::Ecs.item_search('ruby', :country => :asfdkjjk)
+      Amazon::A2s.item_search('ruby', :country => :asfdkjjk)
     end
   end
   
   def test_item_search_by_author
-    resp = Amazon::Ecs.item_search('dave', :type => :author)
+    resp = Amazon::A2s.item_search('dave', :type => :author)
     assert resp.valid_request?
   end
   
   def test_text_at
-    item = Amazon::Ecs.item_search("0974514055").items.first
+    item = Amazon::A2s.item_search("0974514055").items.first
     
     # one item
     assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition", 
@@ -75,7 +75,7 @@ class Amazon::EcsTest < Test::Unit::TestCase
   end
 
   def test_hash_at_handles_specific_types
-    item = Amazon::Ecs.item_search('ipod', :search_index => 'Merchants', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.first
+    item = Amazon::A2s.item_search('ipod', :search_index => 'Merchants', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.first
     
     # Measurements & Image
     assert_equal(Amazon::Image.new("http://ecx.images-amazon.com/images/I/01Hwx6M-XEL.jpg",
@@ -104,18 +104,18 @@ class Amazon::EcsTest < Test::Unit::TestCase
   end
   
   def test_price_should_handle_Price_Too_Low_To_Display
-    item = Amazon::Ecs.item_lookup('B000W79GQA', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.first
+    item = Amazon::A2s.item_lookup('B000W79GQA', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.first
     assert item.to_hash
   end
   
   def test_hash_at_handles_string_editions
-    Amazon::Ecs.item_search("potter", :item_page => 3, :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.each do |item|
+    Amazon::A2s.item_search("potter", :item_page => 3, :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.each do |item|
       assert item.to_hash
     end
   end
   
   def test_hash_at_makes_arrays_from_lists    
-    item = Amazon::Ecs.item_search("0974514055").items.first
+    item = Amazon::A2s.item_search("0974514055").items.first
 
     # when <listmanialists> contains a bunch of <listmanialist>s, return an array
     assert_equal({:listmanialist => [
@@ -140,7 +140,7 @@ class Amazon::EcsTest < Test::Unit::TestCase
   end
 
   def test_unescaped_at
-    item = Amazon::Ecs.item_search("0974514055").items.first
+    item = Amazon::A2s.item_search("0974514055").items.first
       
     item.search("editorialreview").each do |review|
       # returns unescaped HTML content, Hpricot escapes all text values
@@ -151,25 +151,25 @@ class Amazon::EcsTest < Test::Unit::TestCase
   
   ## Test item_lookup
   def test_item_lookup
-    resp = Amazon::Ecs.item_lookup('0974514055')
+    resp = Amazon::A2s.item_lookup('0974514055')
     assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition", 
     resp.items.first.text_at("itemattributes/title")
   end
   
   def test_item_lookup_with_invalid_request
     assert_raise Amazon::RequiredParameterMissing, 'Your request is missing required parameters. Required parameters include ItemId.' do
-      Amazon::Ecs.item_lookup(nil)
+      Amazon::A2s.item_lookup(nil)
     end
   end
 
   def test_item_lookup_with_no_result
     assert_raise Amazon::InvalidParameterValue, 'ABC is not a valid value for ItemId. Please change this value and retry your request.' do
-      Amazon::Ecs.item_lookup('abc')
+      Amazon::A2s.item_lookup('abc')
     end
   end
   
   def test_browsenodes
-    item = Amazon::Ecs.item_lookup('B000ROI682', :response_group => 'BrowseNodes').items.first
+    item = Amazon::A2s.item_lookup('B000ROI682', :response_group => 'BrowseNodes').items.first
     browsenodes = item.hash_at('browsenodes')[:browsenode]
     assert browsenodes.size > 1 
     browsenodes.each do |browsenode|
@@ -179,7 +179,7 @@ class Amazon::EcsTest < Test::Unit::TestCase
   end
   
   def test_hpricot_extensions
-    resp = Amazon::Ecs.item_lookup('0974514055')
+    resp = Amazon::A2s.item_lookup('0974514055')
     title = resp.items.first.text_at("itemattributes/title")
     authors = resp.items.first/"author"
     
