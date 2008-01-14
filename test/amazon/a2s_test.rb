@@ -9,7 +9,7 @@ class Amazon::A2sTest < Test::Unit::TestCase
   
   Amazon::A2s.options.merge!(
     :response_group    => 'Large',
-    :aWS_access_key_id => AWS_ACCESS_KEY_ID)
+    :aws_access_key_id => AWS_ACCESS_KEY_ID)
 
   ## Test item_search
 

@@ -7,7 +7,16 @@ module Amazon
     @debug = false
 
     # see http://railstips.org/2006/11/18/class-and-instance-variables-in-ruby
-    class << self; attr_accessor :debug, :options; end
+    class << self;
+      attr_accessor :debug, :options;
+    
+      def options=(hsh)
+        if access_key = hsh.delete(:aws_access_key_id)
+          hsh[:aWS_access_key_id] = access_key
+        end
+        @options = hsh
+      end
+    end
 
   protected
     def self.log(s)

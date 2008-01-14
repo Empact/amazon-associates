@@ -33,7 +33,7 @@ module Amazon
 
     # Generic send request to ECS REST service. You have to specify the :operation parameter.
     def self.send_request(opts)
-      opts.reverse_merge! self.options
+      opts.reverse_merge! options
       request_url = prepare_url(opts)
       log "Request URL: #{request_url}"
       
