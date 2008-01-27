@@ -1,3 +1,4 @@
+require File.join(File.dirname(__FILE__), 'amazon-a2s', 'extensions', 'pp')
 require File.join(File.dirname(__FILE__), 'amazon-a2s', 'request')
 
 module Amazon
@@ -10,11 +11,11 @@ module Amazon
     class << self;
       attr_accessor :debug, :options;
     
-      def options=(hsh)
-        if access_key = hsh.delete(:aws_access_key_id)
-          hsh[:aWS_access_key_id] = access_key
+      def options
+        if access_key = @options.delete(:aws_access_key_id)
+          @options[:aWS_access_key_id] = access_key
         end
-        @options = hsh
+        @options
       end
     end
 

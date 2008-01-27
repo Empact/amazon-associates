@@ -14,7 +14,8 @@ module Amazon
     'AWS.ECommerceService.NoExactMatches' => ItemNotFound,
     'AWS.ParameterOutOfRange' => ParameterOutOfRange,
     'AWS.InvalidOperationParameter'=> InvalidParameterValue,
-    'AWS.InvalidResponseGroup' => InvalidParameterValue
+    'AWS.InvalidResponseGroup' => InvalidParameterValue,
+    'AWS.RestrictedParameterValueCombination' => InvalidParameterValue
   }
   
   IGNORE_ERRORS = ['AWS.ECommerceService.NoSimilarities']  

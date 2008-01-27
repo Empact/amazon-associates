@@ -15,7 +15,7 @@ module Amazon
       actions.each_pair do |action, main_arg|
         meta_def(action) do |*args|
           opts = args.extract_options!
-          opts[main_arg] = args.first
+          opts[main_arg] = args.first unless args.empty?
           opts[:operation] = action.to_s.camelize
           
           yield opts if block_given?
@@ -29,7 +29,8 @@ module Amazon
       opts[:search_index] ||= 'Books'
     end
     request :similarity_lookup => :item_id,
-            :item_lookup => :item_id
+            :item_lookup => :item_id,
+            :browse_node_lookup => :browse_node
 
     # Generic send request to ECS REST service. You have to specify the :operation parameter.
     def self.send_request(opts)
@@ -41,11 +42,25 @@ module Amazon
       unless res.kind_of? Net::HTTPSuccess
         raise Amazon::RequestError, "HTTP Response: #{res.code} #{res.message}"
       end
-      Response.new(res.body)
+      Response.new(request_url, res.body)
     end
     
   private 
     def self.prepare_url(opts)
+      opts.to_options.assert_valid_keys(:aWS_access_key_id, :operation, :associate_tag,
+        
+                                 :item_page, :item_id, :country, :type, :item_type,
+                                 :browse_node_id,
+        
+                                 :actor, :artist, :audience_rating, :author,
+                                 :availability, :brand, :browse_node, :city, :composer,
+                                 :condition, :conductor, :director, :page, :keywords,
+                                 :manufacturer, :maximum_price, :merchant_id,
+                                 :minimum_price, :neighborhood, :orchestra,
+                                 :postal_code, :power, :publisher, :search_index, :sort,
+                                 :tag_page, :tags_per_page, :tag_sort, :text_stream,
+                                 :title, :variation_page, :response_group)      
+      
       country = opts.delete(:country) || 'us'
       request_url = SERVICE_URLS.fetch(country.to_sym) do
         raise Amazon::RequestError, "Invalid country '#{country}'"

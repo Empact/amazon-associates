@@ -168,6 +168,10 @@ class Amazon::A2sTest < Test::Unit::TestCase
     end
   end
   
+  def test_top_sellers
+    assert !Amazon::A2s.browse_node_lookup(:response_group => 'TopSellers', :browse_node_id => 493964).top_sellers.empty?
+  end
+  
   def test_browsenodes
     item = Amazon::A2s.item_lookup('B000ROI682', :response_group => 'BrowseNodes').items.first
     browsenodes = item.hash_at('browsenodes')[:browsenode]

@@ -20,11 +20,14 @@ module Amazon
       @id == other.id and @name == other.name
     end
     
-    %w{brand type}.each do |name|
+    {:brand => [:manufacturers, :custom_brands], :type => [:categories]}.each_pair do |name, aliases|
       define_method("#{name}?") do
+        markers = ([name] + aliases).map {|n| n.to_s.titleize}
+        return true if markers.include? instance_variable_get(:@name)
+                
         ancestor = instance_variable_get :@ancestors
 	      while ancestor
-	        return true if ancestor.name == name.titleize
+	        return true if markers.include? ancestor.name
 	        ancestor = ancestor.ancestors
 	      end
         false

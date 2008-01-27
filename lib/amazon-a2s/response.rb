@@ -11,7 +11,8 @@ module Amazon
       attr_accessor :doc
       
       # XML input is in string format
-      def initialize(xml)
+      def initialize(url, xml)
+        @url = url.to_s
         @doc = Hpricot(xml)
         raise error if error
       end
@@ -20,21 +21,29 @@ module Amazon
       def valid_request?
         @doc.text_at("isvalid") == "True"
       end
+      
+      def request
+        @doc.hash_at('request')
+      end
 
       # Return error message.
       def error
         if code = @doc.text_at('error/code') and not IGNORE_ERRORS.include? code
           message = @doc.text_at('error/message')
           if exception = ERROR[code]
-            exception.new(message)
+            exception.new("#{message} (#{@url})")
           else
-            RuntimeError.new("#{code}: #{message}")
+            RuntimeError.new("#{code}: #{message} (#{@url})")
           end
         end
       end
       
       def items
         @items ||= @doc.search(:item)
+      end
+      
+      def top_sellers
+        @top_sellers ||= @doc.search('topsellers/topseller')
       end
       
       # Return current page no if :item_page option is when initiating the request.
