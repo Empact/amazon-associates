@@ -99,7 +99,7 @@ module Hpricot
         begin
           Amazon::Ordinal.new(result.to_int)
         rescue TypeError
-          # a few edition types aren't ordinals (e.g., 1st, 2nd, 3rd), but strings (e.g., "First American Edition")
+          # a few edition types aren't ordinals, but strings (e.g., "First American Edition")
           result.to_text
         end 
       elsif result.name.starts_with? 'total' or result.name.starts_with? 'number'
@@ -109,8 +109,12 @@ module Hpricot
       elsif result.name.ends_with? 'image'
         Amazon::Image.new(result.text_at('url'), result.int_at('width'), result.int_at('height')) 
       else
-        result.to_element
-      end      
+        if (result.children.size > 1 or !result.children.first.is_a? Text) and names = result.children.collect {|c| c.name }.uniq and names.size == 1 and names[0].pluralize == result.name
+          result.children.map(&:to_hash)
+        else
+          result.to_element
+        end
+      end
     end
   end
 end

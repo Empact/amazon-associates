@@ -17,7 +17,8 @@ module Amazon
     end
     
     def ==(other)
-      @id == other.id and @name == other.name
+      return false unless other.respond_to?(:name, :id)
+      @name == other.name and @id == other.id
     end
     
     {:brand => [:manufacturers, :custom_brands], :type => [:categories]}.each_pair do |name, aliases|

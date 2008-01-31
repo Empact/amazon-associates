@@ -98,6 +98,8 @@ class Amazon::A2sTest < Test::Unit::TestCase
     
     # attributes
     assert_equal({:category=>"primary"}, item.hash_at('imageset')[:attributes])
+    element = Amazon::A2s.item_lookup('0545010225').items.first.hash_at('itemattributes/creator')
+    assert_equal(Hpricot::Element.new("Mary GrandPré", :role => 'Illustrator'), element)
     
     # ordinals
     # in test_text_at, above
@@ -118,24 +120,22 @@ class Amazon::A2sTest < Test::Unit::TestCase
     item = Amazon::A2s.item_search("0974514055").items.first
 
     # when <listmanialists> contains a bunch of <listmanialist>s, return an array
-    assert_equal({:listmanialist => [
-                     {:listid=>"RCWKKCCVL5FGL",  :listname=>"Survey of programming languages/paradigms"},                     
-                     {:listid=>"R2IJ2M3X3ITVAR", :listname=>"The path to enlightenment"},
-                     {:listid=>"R3MGYO2P65FC8J", :listname=>"Ruby Books"},
-                     {:listid=>"R3AEQKTMFEETCN", :listname=>"Ruby & Rails From Novice To Expert"},
-                     {:listid=>"R2VY37TQWQM0VJ", :listname=>"Computer Science classics"},
-                     {:listid=>"R3DB3MYO22PHZ6", :listname=>"Ruby for Linguistics"},
-                     {:listid=>"R192F79G3UXHJ5", :listname=>"Programming Books"},
-                     {:listid=>"R1L6QNM215M7FB", :listname=>"Ruby/Ruby on Rails"},
-                     {:listid=>"RROZA1M8ZJVR2",  :listname=>"Some books on web development"},
-                     {:listid=>"RDZIIJ8YUICL1",  :listname=>"Programmer's Companion"}]},
+    assert_equal([{:listid=>"RCWKKCCVL5FGL",  :listname=>"Survey of programming languages/paradigms"},                     
+                  {:listid=>"R2IJ2M3X3ITVAR", :listname=>"The path to enlightenment"},
+                  {:listid=>"R3MGYO2P65FC8J", :listname=>"Ruby Books"},
+                  {:listid=>"R3AEQKTMFEETCN", :listname=>"Ruby & Rails From Novice To Expert"},
+                  {:listid=>"R2VY37TQWQM0VJ", :listname=>"Computer Science classics"},
+                  {:listid=>"R3DB3MYO22PHZ6", :listname=>"Ruby for Linguistics"},
+                  {:listid=>"R192F79G3UXHJ5", :listname=>"Programming Books"},
+                  {:listid=>"R1L6QNM215M7FB", :listname=>"Ruby/Ruby on Rails"},
+                  {:listid=>"RROZA1M8ZJVR2",  :listname=>"Some books on web development"},
+                  {:listid=>"RDZIIJ8YUICL1",  :listname=>"Programmer's Companion"}],
        item.hash_at('listmanialists'))
     
     # when there's a single child, make sure it's parsed rather than returned as a string
-    assert_equal({:editorialreview=>
-                      {:content=>
+    assert_equal([{:content=>
                         "Ruby is an increasingly popular, fully object-oriented dynamic programming language, hailed by many practitioners as the finest and most useful language available today.  When Ruby first burst onto the scene in the Western world, the Pragmatic Programmers were there with the definitive reference manual, <i>Programming Ruby: The Pragmatic Programmer's Guide</i>.<br /> <br /> Now in its second edition, author Dave Thomas has expanded the famous Pickaxe book with over 200 pages of new content, covering all the improved language features of Ruby 1.8 and standard library modules. The Pickaxe contains four major sections: <ul><li>An acclaimed tutorial on using Ruby. </li><li>The definitive reference to the language. </li><li>Complete documentation on all built-in classes, modules, and methods </li><li>Complete descriptions of all 98 standard libraries.</li></ul><br /> <br /> If you enjoyed the First Edition, you'll appreciate the expanded content, including enhanced coverage of installation, packaging, documenting Ruby source code, threading and synchronization, and enhancing Ruby's capabilities using C-language extensions. Programming for the World Wide Web is easy in Ruby, with new chapters on XML/RPC, SOAP, distributed Ruby, templating systems, and other web services.  There's even a new chapter on unit testing.<br /> <br /> This is the definitive reference manual for Ruby, including a description of all the standard library modules, a complete reference to all built-in classes and modules (including more than 250 significant changes since the First Edition). Coverage of other features has grown tremendously, including details on how to harness the sophisticated capabilities of irb, so you can dynamically examine and experiment with your running code. \"Ruby is a wonderfully powerful and useful language, and whenever I'm working with it this book is at my side\" --Martin Fowler, Chief Scientist, ThoughtWorks",
-                       :source=>"Book Description"}},
+                       :source=>"Book Description"}],
       item.hash_at('editorialreviews'))
   end
 
@@ -174,7 +174,7 @@ class Amazon::A2sTest < Test::Unit::TestCase
   
   def test_browsenodes
     item = Amazon::A2s.item_lookup('B000ROI682', :response_group => 'BrowseNodes').items.first
-    browsenodes = item.hash_at('browsenodes')[:browsenode]
+    browsenodes = item.hash_at('browsenodes')
     assert browsenodes.size > 1 
     browsenodes.each do |browsenode|
       assert_kind_of Amazon::BrowseNode, browsenode
