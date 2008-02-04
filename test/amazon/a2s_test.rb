@@ -139,16 +139,6 @@ class Amazon::A2sTest < Test::Unit::TestCase
       item.hash_at('editorialreviews'))
   end
 
-  def test_unescaped_at
-    item = Amazon::A2s.item_search("0974514055").items.first
-      
-    item.search("editorialreview").each do |review|
-      # returns unescaped HTML content, Hpricot escapes all text values
-      assert review.unescaped_at('source')
-      assert review.unescaped_at('content')
-    end
-  end
-  
   ## Test item_lookup
   def test_item_lookup
     resp = Amazon::A2s.item_lookup('0974514055')
@@ -179,6 +169,7 @@ class Amazon::A2sTest < Test::Unit::TestCase
     browsenodes.each do |browsenode|
       assert_kind_of Amazon::BrowseNode, browsenode
       assert (browsenode.type? or browsenode.brand?), browsenode.to_s
+      assert !browsenode.to_s.include?('&amp;'), browsenode.to_s
     end
   end
   

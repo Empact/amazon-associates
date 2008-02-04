@@ -37,7 +37,7 @@ module Hpricot
 
     # Get the text value of the given path, leave empty to retrieve current element value.
     induce :text do |result|
-      result.inner_html
+      CGI::unescapeHTML(result.inner_html)
     end
 
     induce :int do |result|
@@ -55,11 +55,6 @@ module Hpricot
       else
         raise TypeError, "String #{result.inspect} is not convertible to bool"
       end
-    end
-
-    # Get the unescaped HTML text of the given path.
-    induce :unescaped do |result|
-      CGI::unescapeHTML(result.inner_html)
     end
 
     induce :element do |result|
