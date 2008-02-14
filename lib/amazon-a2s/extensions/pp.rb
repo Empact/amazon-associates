@@ -1,14 +1,15 @@
 require 'pp'
 require 'stringio'
 
-def pp_to_string(*args)
-  old_out = $stdout
-  begin
-    s=StringIO.new
-    $stdout=s
-    pp(*args)
-  ensure
-    $stdout=old_out
+class Object
+  def pp_to_s
+    old_out = $stdout
+    begin
+      $stdout = s = StringIO.new
+      pp self
+    ensure
+      $stdout = old_out
+    end
+    s.string
   end
-  s.string
 end
