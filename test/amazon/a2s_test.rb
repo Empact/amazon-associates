@@ -75,15 +75,15 @@ class Amazon::A2sTest < Test::Unit::TestCase
   end
 
   def test_hash_at_handles_specific_types
-    item = Amazon::A2s.item_search('ipod', :search_index => 'Merchants', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.first
+    item = Amazon::A2s.item_search('ipod', :search_index => 'All', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.first
     
     # Measurements & Image
-    assert_equal(Amazon::Image.new("http://ecx.images-amazon.com/images/I/01Hwx6M-XEL.jpg",
-														      Amazon::Measurement.new(62, 'pixels'),
+    assert_equal(Amazon::Image.new("http://ecx.images-amazon.com/images/I/21qb6grULjL._SL75_.jpg",
+														      Amazon::Measurement.new(40, 'pixels'),
 														      Amazon::Measurement.new(75, 'pixels')),
       item.hash_at("smallimage"))
     
-    assert_equal "62x75", item.hash_at("smallimage").size
+    assert_equal "40x75", item.hash_at("smallimage").size
     
     # bools
     assert_equal true, item.bool_at('iseligibleforsupersavershipping')
@@ -133,10 +133,10 @@ class Amazon::A2sTest < Test::Unit::TestCase
        item.hash_at('listmanialists'))
     
     # when there's a single child, make sure it's parsed rather than returned as a string
-    assert_equal([{:content=>
-                        "Ruby is an increasingly popular, fully object-oriented dynamic programming language, hailed by many practitioners as the finest and most useful language available today.  When Ruby first burst onto the scene in the Western world, the Pragmatic Programmers were there with the definitive reference manual, <i>Programming Ruby: The Pragmatic Programmer's Guide</i>.<br /> <br /> Now in its second edition, author Dave Thomas has expanded the famous Pickaxe book with over 200 pages of new content, covering all the improved language features of Ruby 1.8 and standard library modules. The Pickaxe contains four major sections: <ul><li>An acclaimed tutorial on using Ruby. </li><li>The definitive reference to the language. </li><li>Complete documentation on all built-in classes, modules, and methods </li><li>Complete descriptions of all 98 standard libraries.</li></ul><br /> <br /> If you enjoyed the First Edition, you'll appreciate the expanded content, including enhanced coverage of installation, packaging, documenting Ruby source code, threading and synchronization, and enhancing Ruby's capabilities using C-language extensions. Programming for the World Wide Web is easy in Ruby, with new chapters on XML/RPC, SOAP, distributed Ruby, templating systems, and other web services.  There's even a new chapter on unit testing.<br /> <br /> This is the definitive reference manual for Ruby, including a description of all the standard library modules, a complete reference to all built-in classes and modules (including more than 250 significant changes since the First Edition). Coverage of other features has grown tremendously, including details on how to harness the sophisticated capabilities of irb, so you can dynamically examine and experiment with your running code. \"Ruby is a wonderfully powerful and useful language, and whenever I'm working with it this book is at my side\" --Martin Fowler, Chief Scientist, ThoughtWorks",
-                       :source=>"Book Description"}],
-      item.hash_at('editorialreviews'))
+    assert_equal item.hash_at('editorialreviews')[0][:source], "Product Description"
+    assert item.hash_at('editorialreviews')[0][:content].is_a?(String)
+    assert item.hash_at('editorialreviews')[0][:content].size > 100
+    assert item.hash_at('editorialreviews')[0][:content].starts_with?("Ruby is an increasingly popular, fully object-oriented d")
   end
 
   ## Test item_lookup
@@ -168,7 +168,6 @@ class Amazon::A2sTest < Test::Unit::TestCase
     assert browsenodes.size > 1 
     browsenodes.each do |browsenode|
       assert_kind_of Amazon::BrowseNode, browsenode
-      assert (browsenode.type? or browsenode.brand?), browsenode.to_s
       assert !browsenode.to_s.include?('&amp;'), browsenode.to_s
     end
   end
