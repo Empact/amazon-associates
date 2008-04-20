@@ -4,21 +4,22 @@ end
 
 module Amazon
   class A2s
-    # Default search options 
+    # Default search options
     @options = {}
     @debug = false
 
     # see http://railstips.org/2006/11/18/class-and-instance-variables-in-ruby
     class << self;
-      attr_accessor :debug, :options;
-    
+      attr_accessor :debug
+      attr_writer :options
+
       def options
         if access_key = @options.delete(:aws_access_key_id)
           @options[:aWS_access_key_id] = access_key
         end
         @options
       end
-      
+
       SORT_TYPES = {
         'All' => nil,
 	      'Apparel' => %w[relevancerank salesrank pricerank inverseprice -launch-date sale-flag],
@@ -54,18 +55,18 @@ module Amazon
 	      'VHS' => %w[relevancerank salesrank price -price titlerank -video-release-date],
 	      'Video' => %w[relevancerank salesrank price -price titlerank -video-release-date],
 	      'VideoGames' => %w[pmrank salesrank price -price titlerank],
-	      'Wireless' => %w[daterank pricerank invers-pricerank reviewrank salesrank titlerank -titlerank], 
+	      'Wireless' => %w[daterank pricerank invers-pricerank reviewrank salesrank titlerank -titlerank],
 	      'WirelessAccessories' => %w[psrank salesrank titlerank -titlerank]
 	    }.freeze
       def sort_types
         SORT_TYPES
       end
-      
+
       SEARCH_INDEXES = SORT_TYPES.keys.sort.freeze
       def search_indexes
         SEARCH_INDEXES
       end
-      
+
       # TODO: Default to blended?  Don't show others except on refined search page?
       def default_search_index
         'Books'
