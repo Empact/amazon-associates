@@ -1,4 +1,5 @@
 require File.join(File.dirname(__FILE__), 'response')
+require 'net/http'
 
 module Amazon
   class A2s
