@@ -1,16 +1,6 @@
-dirname = File.dirname(__FILE__) 
-require File.join(dirname, '../test_helper')
-require File.join(dirname, '../../lib/amazon-a2s')
+require File.join(File.dirname(__FILE__), '../test_helper')
 
-class Amazon::A2sTest < Test::Unit::TestCase
-
-  AWS_ACCESS_KEY_ID = '0PP7FTN6FM3BZGGXJWG2'
-  raise "Please specify set your AWS_ACCESS_KEY_ID" if AWS_ACCESS_KEY_ID.empty?
-  
-  Amazon::A2s.options.merge!(
-    :response_group    => 'Large',
-    :aws_access_key_id => AWS_ACCESS_KEY_ID)
-
+class Amazon::A2s::ItemTest < Test::Unit::TestCase
   ## Test item_search
 
   def test_item_search
@@ -160,16 +150,6 @@ class Amazon::A2sTest < Test::Unit::TestCase
   
   def test_top_sellers
     assert !Amazon::A2s.browse_node_lookup(:response_group => 'TopSellers', :browse_node_id => 493964).top_sellers.empty?
-  end
-  
-  def test_browsenodes
-    item = Amazon::A2s.item_lookup('B000ROI682', :response_group => 'BrowseNodes').items.first
-    browsenodes = item.hash_at('browsenodes')
-    assert browsenodes.size > 1 
-    browsenodes.each do |browsenode|
-      assert_kind_of Amazon::BrowseNode, browsenode
-      assert !browsenode.to_s.include?('&amp;'), browsenode.to_s
-    end
   end
   
   def test_hpricot_extensions
