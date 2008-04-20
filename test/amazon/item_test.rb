@@ -148,10 +148,6 @@ class Amazon::A2s::ItemTest < Test::Unit::TestCase
     end
   end
   
-  def test_top_sellers
-    assert !Amazon::A2s.browse_node_lookup(:response_group => 'TopSellers', :browse_node_id => 493964).top_sellers.empty?
-  end
-  
   def test_hpricot_extensions
     resp = Amazon::A2s.item_lookup('0974514055')
     title = resp.items.first.text_at("itemattributes/title")
