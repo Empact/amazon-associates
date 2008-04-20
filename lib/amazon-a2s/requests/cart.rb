@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), 'request')
+require File.join(File.dirname(__FILE__), '../request')
 
 module Amazon
   class A2s
@@ -7,8 +7,10 @@ module Amazon
     
     # Creates remote shopping cart containing _asin_
     request :cart_create => :asin do |opts|
-      opts["Item.#{asin}.Quantity"] = opts[:quantity] || 1
-      opts["Item.#{asin}.ASIN"] = opts.delete(:asin)
+      opts[:items].each_pair do |item, count|
+        opts["Item.#{opts[:asin]}.Quantity"] = opts[:quantity] || 1
+        opts["Item.#{opts[:asin]}.ASIN"] = opts.delete(:asin)        
+      end
     end
     
     # Adds item to remote shopping cart

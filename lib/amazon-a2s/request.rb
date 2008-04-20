@@ -25,15 +25,6 @@ module Amazon
         end
       end
     end
-    
-    request :item_search => :keywords do |opts|
-      opts[:search_index] ||= default_search_index
-    end
-    request :browse_node_lookup => :browse_node_id do |opts|
-      opts[:response_group] ||= 'TopSellers'
-    end
-    request :similarity_lookup => :item_id,
-            :item_lookup => :item_id
 
     # Generic send request to ECS REST service. You have to specify the :operation parameter.
     def self.send_request(opts)

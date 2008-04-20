@@ -1,6 +1,6 @@
-require File.join(File.dirname(__FILE__), 'amazon-a2s', 'extensions', 'pp')
-require File.join(File.dirname(__FILE__), 'amazon-a2s', 'request')
-require File.join(File.dirname(__FILE__), 'amazon-a2s', 'cart')
+%w(extensions/pp requests/cart requests/browse_node requests/item).each do |file|
+  require File.join(File.dirname(__FILE__), 'amazon-a2s', file)
+end
 
 module Amazon
   class A2s
