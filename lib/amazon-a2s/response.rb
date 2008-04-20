@@ -38,6 +38,10 @@ module Amazon
         end
       end
 
+      def cart
+        @cart ||= @doc.hash_at(:cart)
+      end
+
       def items
         @items ||= @doc.search(:item)
       end
