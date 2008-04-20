@@ -40,7 +40,7 @@ module Amazon
 
   private
     def self.valid_arguments(operation)
-      base_args = [:aWS_access_key_id, :operation, :associate_tag]
+      base_args = [:aWS_access_key_id, :operation, :associate_tag, :response_group]
 
       if operation == 'CartCreate'
         (0..99).inject(base_args + [:items]) do |all, i|
@@ -60,7 +60,7 @@ module Amazon
 	       :minimum_price, :neighborhood, :orchestra,
 	       :postal_code, :power, :publisher, :search_index, :sort,
 	       :tag_page, :tags_per_page, :tag_sort, :text_stream,
-	       :title, :variation_page, :response_group]
+	       :title, :variation_page]
       end
     end
 

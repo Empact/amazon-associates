@@ -1,8 +1,5 @@
 require File.join(File.dirname(__FILE__), '../test_helper')
 
-Amazon::A2s.options.merge!(
-  :response_group => 'Large')
-
 class Amazon::A2s::ItemTest < Test::Unit::TestCase
   ## Test item_search
 
@@ -53,7 +50,7 @@ class Amazon::A2s::ItemTest < Test::Unit::TestCase
   end
 
   def test_text_at
-    item = Amazon::A2s.item_search("0974514055").items.first
+    item = Amazon::A2s.item_search("0974514055", :response_group => 'Large').items.first
 
     # one item
     assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition",
@@ -110,7 +107,7 @@ class Amazon::A2s::ItemTest < Test::Unit::TestCase
   end
 
   def test_hash_at_makes_arrays_from_lists
-    item = Amazon::A2s.item_search("0974514055").items.first
+    item = Amazon::A2s.item_search("0974514055", :response_group => 'Large').items.first
 
     # when <listmanialists> contains a bunch of <listmanialist>s, return an array
     assert_equal([{:listid=>"RCWKKCCVL5FGL",  :listname=>"Survey of programming languages/paradigms"},
