@@ -39,7 +39,7 @@ module Amazon
       end
 
       def cart
-        @cart ||= @doc.hash_at(:cart)
+        @cart ||= @doc.at(:cart)
       end
 
       def items
