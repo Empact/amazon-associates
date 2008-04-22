@@ -76,6 +76,10 @@ module Amazon
       def total_pages
         @total_pages ||= @doc.int_at('totalpages')
       end
+
+      def method_missing(method, *args)
+        @doc.send(method, args)
+      end
     end
   end
 end
