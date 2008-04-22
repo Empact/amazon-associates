@@ -6,6 +6,18 @@ end
 
 module Amazon
   class A2s
+    class Cart
+      attr_accessor :doc
+
+      def initialize(doc)
+        @doc = doc
+      end
+
+      def items
+        @items ||= @doc.search(:cartitems)
+      end
+    end
+
     # Response object returned after a REST call to Amazon service.
     class Response
       attr_accessor :doc
@@ -39,7 +51,7 @@ module Amazon
       end
 
       def cart
-        @cart ||= @doc.at(:cart)
+        @cart ||= Cart.new(@doc.at(:cart))
       end
 
       def items

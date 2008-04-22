@@ -48,19 +48,19 @@ module Amazon
           all << :"Item.#{i}.Quantity"
           all
         end
+      elsif operation == 'CartGet'
+        base_args + [:cart_id, :url_encoded_hmac, :hMAC]
       else
         base_args + [
          :item_page, :item_id, :country, :type, :item_type,
-	       :browse_node_id,
-
-	       :actor, :artist, :audience_rating, :author,
-	       :availability, :brand, :browse_node, :city, :composer,
-	       :condition, :conductor, :director, :page, :keywords,
-	       :manufacturer, :maximum_price, :merchant_id,
-	       :minimum_price, :neighborhood, :orchestra,
-	       :postal_code, :power, :publisher, :search_index, :sort,
-	       :tag_page, :tags_per_page, :tag_sort, :text_stream,
-	       :title, :variation_page]
+         :browse_node_id, :actor, :artist, :audience_rating, :author,
+         :availability, :brand, :browse_node, :city, :composer,
+         :condition, :conductor, :director, :page, :keywords,
+         :manufacturer, :maximum_price, :merchant_id,
+         :minimum_price, :neighborhood, :orchestra,
+         :postal_code, :power, :publisher, :search_index, :sort,
+         :tag_page, :tags_per_page, :tag_sort, :text_stream,
+         :title, :variation_page]
       end
     end
 
@@ -76,7 +76,8 @@ module Amazon
       opts.each_pair do |k,v|
         next unless v
         v *= ',' if v.is_a? Array
-        qs << "&#{k.to_s.camelize}=#{URI.encode(v.to_s)}"
+        v = URI.encode(v.to_s) unless k == :hMAC
+        qs << "&#{k.to_s.camelize}=#{ v.to_s }"
       end
       "#{request_url}#{qs}"
     end
