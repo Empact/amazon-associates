@@ -6,8 +6,16 @@ end
 
 module Amazon
   class A2s
-    class Cart
+    module DocWrapper
       attr_accessor :doc
+
+      def method_missing(method, *args)
+        @doc.send(method, args)
+      end
+    end
+
+    class Cart
+      include DocWrapper
 
       def initialize(doc)
         @doc = doc
@@ -20,7 +28,7 @@ module Amazon
 
     # Response object returned after a REST call to Amazon service.
     class Response
-      attr_accessor :doc
+      include DocWrapper
 
       # XML input is in string format
       def initialize(url, xml)
@@ -75,10 +83,6 @@ module Amazon
       # Return total pages.
       def total_pages
         @total_pages ||= @doc.int_at('totalpages')
-      end
-
-      def method_missing(method, *args)
-        @doc.send(method, args)
       end
     end
   end
