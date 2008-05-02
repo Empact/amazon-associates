@@ -16,8 +16,15 @@ module Amazon
 
       opts.delete(:items).each_with_index do |(item, count), index|
         # item is an asin or offer_listing_id (latter preferred by amazon)
+        item = {:offer_listing_id => item} unless item.is_a? Hash
+        if id = item.delete(:offer_listing_id)
+          opts[:"Item.#{index}.OfferListingId"] = id
+        elsif id = item.delete(:asin)
+          opts["Item.#{index}.ASIN"] = id
+        elsif id = item.delete(:list_item_id)
+          opts["Item.#{index}.ListItemId"] = id
+        end
         opts[:"Item.#{index}.Quantity"] = count
-        opts[:"Item.#{index}.ASIN"] = item
       end
       opts
     end
