@@ -110,7 +110,8 @@ class Amazon::A2s::ItemTest < Test::Unit::TestCase
     item = Amazon::A2s.item_search("0974514055", :response_group => 'Large').items.first
 
     # when <listmanialists> contains a bunch of <listmanialist>s, return an array
-    assert_equal([{:listid=>"RCWKKCCVL5FGL",  :listname=>"Survey of programming languages/paradigms"},
+    assert_equal([{:listid=>"R14L8RHCLAYQMY", :listname=>"Ruby on Rails"},
+                  {:listid=>"RCWKKCCVL5FGL",  :listname=>"Survey of programming languages/paradigms"},
                   {:listid=>"R2IJ2M3X3ITVAR", :listname=>"The path to enlightenment"},
                   {:listid=>"R3MGYO2P65FC8J", :listname=>"Ruby Books"},
                   {:listid=>"R3AEQKTMFEETCN", :listname=>"Ruby & Rails From Novice To Expert"},
@@ -118,8 +119,7 @@ class Amazon::A2s::ItemTest < Test::Unit::TestCase
                   {:listid=>"R3DB3MYO22PHZ6", :listname=>"Ruby for Linguistics"},
                   {:listid=>"R192F79G3UXHJ5", :listname=>"Programming Books"},
                   {:listid=>"R1L6QNM215M7FB", :listname=>"Ruby/Ruby on Rails"},
-                  {:listid=>"RROZA1M8ZJVR2",  :listname=>"Some books on web development"},
-                  {:listid=>"RDZIIJ8YUICL1",  :listname=>"Programmer's Companion"}],
+                  {:listid=>"RROZA1M8ZJVR2",  :listname=>"Some books on web development"}],
        item.hash_at('listmanialists'))
 
     # when there's a single child, make sure it's parsed rather than returned as a string
