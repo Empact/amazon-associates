@@ -41,15 +41,19 @@ module Amazon
   private
     def self.valid_arguments(operation)
       base_args = [:aWS_access_key_id, :operation, :associate_tag, :response_group]
+      cart_args = [:cart_id, :url_encoded_hmac, :hMAC]
+      item_args = (0..99).inject([:items]) do |all, i|
+        all << :"Item.#{i}.ASIN"
+        all << :"Item.#{i}.Quantity"
+        all
+      end
 
       if operation == 'CartCreate'
-        (0..99).inject(base_args + [:items]) do |all, i|
-          all << :"Item.#{i}.ASIN"
-          all << :"Item.#{i}.Quantity"
-          all
-        end
+        base_args + item_args
+      elsif operation == 'CartAdd'
+        base_args + item_args + cart_args
       elsif operation == 'CartGet'
-        base_args + [:cart_id, :url_encoded_hmac, :hMAC]
+        base_args + cart_args
       else
         base_args + [
          :item_page, :item_id, :country, :type, :item_type,

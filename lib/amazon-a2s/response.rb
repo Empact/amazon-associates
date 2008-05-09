@@ -14,6 +14,22 @@ module Amazon
       end
     end
 
+    class Item
+      include DocWrapper
+
+      def initialize(doc)
+        @doc = doc
+      end
+
+      def ==(other)
+        @doc.text_at(:asin) == other.text_at(:asin)
+      end
+
+      def eql?(other)
+        @doc.string_at(:asin) == other.string_at(:asin)
+      end
+    end
+
     class Cart
       include DocWrapper
 
@@ -22,7 +38,7 @@ module Amazon
       end
 
       def items
-        @items ||= @doc.search(:cartitems)
+        @items ||= @doc.search(:cartitem).map {|i| Item.new(i) }
       end
     end
 

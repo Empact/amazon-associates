@@ -11,20 +11,24 @@ end
 module Amazon
   class A2s
   private
+    def self.unpack_item(opts, index, item, count = 1)
+      if id = item.delete(:offer_listing_id)
+        opts[:"Item.#{index}.OfferListingId"] = id
+      elsif id = item.delete(:asin)
+        opts["Item.#{index}.ASIN"] = id
+      elsif id = item.delete(:list_item_id)
+        opts["Item.#{index}.ListItemId"] = id
+      end
+      opts[:"Item.#{index}.Quantity"] = count
+    end
+
     def self.unpack_items(opts)
       raise ArgumentError, "items are required" if opts[:items].blank?
 
       opts.delete(:items).each_with_index do |(item, count), index|
         # item is an asin or offer_listing_id (latter preferred by amazon)
         item = {:offer_listing_id => item} unless item.is_a? Hash
-        if id = item.delete(:offer_listing_id)
-          opts[:"Item.#{index}.OfferListingId"] = id
-        elsif id = item.delete(:asin)
-          opts["Item.#{index}.ASIN"] = id
-        elsif id = item.delete(:list_item_id)
-          opts["Item.#{index}.ListItemId"] = id
-        end
-        opts[:"Item.#{index}.Quantity"] = count
+        unpack_item(opts, index, item, count)
       end
       opts
     end
@@ -39,9 +43,13 @@ module Amazon
 
     # Adds item to remote shopping cart
     request :cart_add => :cart_id do |opts|
-      opts["Item.#{asin}.Quantity"] = opts[:quantity] || 1
-      opts["Item.#{asin}.ASIN"] = opts[:asin]
-      opts.map_keys!(:hMAC => :hmac)
+      opts = unpack_items(opts)
+      opts[:cart_id] ||= opts.delete(:cartid)
+      opts[:hMAC] ||= opts.delete(:urlencodedhmac)
+      opts.map_keys!(:cart_id => :cartid,
+                     :cart_id => :id,
+                     :hMAC => :hmac)
+#      raise opts.pp_to_s
     end
 
     # Adds item to remote shopping cart
@@ -49,7 +57,10 @@ module Amazon
       if opts.has_key? :id and opts.has_key? :cart_id and opts[:id] != opts[:cart_id]
         raise ArgumentError, "the id and cart_id parameters are both specified, when the have the same meaning"
       end
-      opts.map_keys!(:cart_id => :id,
+      opts[:cart_id] ||= opts.delete(:cartid)
+      opts[:hMAC] ||= opts.delete(:urlencodedhmac)
+      opts.map_keys!(:cart_id => :cartid,
+                     :cart_id => :id,
                      :hMAC => :hmac)
     end
 
