@@ -82,8 +82,12 @@ module Amazon
     end
 
     # clears contents of remote shopping cart
-    request :cart_clear => :cart_id do
-      opts.map_keys!(:hMAC => :hmac)
+    request :cart_clear => :cart_id do |opts|
+      opts[:cart_id] ||= opts.delete(:cartid)
+      opts[:hMAC] ||= opts.delete(:urlencodedhmac)
+      opts.map_keys!(:cart_id => :cartid,
+                     :cart_id => :id,
+                     :hMAC => :hmac)
     end
   end
 end

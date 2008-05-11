@@ -35,4 +35,12 @@ class Amazon::A2s::CartTest < Test::Unit::TestCase
     assert       result.cart.items.include?(@potter)
     assert_equal 5, result.cart.items.find {|i| i == @potter }.int_at(:quantity)
   end
+
+  def test_cart_clear
+    result = Amazon::A2s.cart_clear(@create_response.cart.to_hash.slice(:cartid, :urlencodedhmac))
+
+    assert_equal 0, result.cart.items.size
+    assert_equal 0, result.cart.items.sum {|i| i.int_at(:quantity) }
+    assert       !result.cart.items.include?(@potter)
+  end
 end

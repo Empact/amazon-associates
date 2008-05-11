@@ -56,7 +56,7 @@ module Amazon
         base_args + item_args
       elsif %w{CartAdd CartModify}.include? operation
         base_args + item_args + cart_args
-      elsif operation == 'CartGet'
+      elsif %w{CartGet CartClear}.include? operation
         base_args + cart_args
       else
         base_args + [
