@@ -3,6 +3,8 @@ require 'net/http'
 
 module Amazon
   class A2s
+    MAX_ITEMS = 99
+
     SERVICE_URLS = {
         :us => 'http://webservices.amazon.com/onca/xml?Service=AWSECommerceService',
         :uk => 'http://webservices.amazon.co.uk/onca/xml?Service=AWSECommerceService',
@@ -42,7 +44,7 @@ module Amazon
     def self.valid_arguments(operation)
       base_args = [:aWS_access_key_id, :operation, :associate_tag, :response_group]
       cart_args = [:cart_id, :url_encoded_hmac, :hMAC]
-      item_args = (0..99).inject([:items]) do |all, i|
+      item_args = (0..MAX_ITEMS).inject([:items]) do |all, i|
         all << :"Item.#{i}.ASIN"
         all << :"Item.#{i}.OfferListingId"
         all << :"Item.#{i}.CartItemId"
