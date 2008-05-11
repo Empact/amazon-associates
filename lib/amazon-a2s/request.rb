@@ -44,6 +44,7 @@ module Amazon
       cart_args = [:cart_id, :url_encoded_hmac, :hMAC]
       item_args = (0..99).inject([:items]) do |all, i|
         all << :"Item.#{i}.ASIN"
+        all << :"Item.#{i}.OfferListingId"
         all << :"Item.#{i}.Quantity"
         all
       end

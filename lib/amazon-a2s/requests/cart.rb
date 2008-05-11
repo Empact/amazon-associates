@@ -12,6 +12,10 @@ module Amazon
   class A2s
   private
     def self.unpack_item(opts, index, item, count = 1)
+      unless [:offer_listing_id, :asin, :list_item_id].any?{|id| item.has_key?(id)}
+        raise ArgumentError, "item needs an OfferListingId, ASIN, or ListItemId"
+      end
+
       if id = item.delete(:offer_listing_id)
         opts[:"Item.#{index}.OfferListingId"] = id
       elsif id = item.delete(:asin)
@@ -26,8 +30,6 @@ module Amazon
       raise ArgumentError, "items are required" if opts[:items].blank?
 
       opts.delete(:items).each_with_index do |(item, count), index|
-        # item is an asin or offer_listing_id (latter preferred by amazon)
-        item = {:offer_listing_id => item} unless item.is_a? Hash
         unpack_item(opts, index, item, count)
       end
       opts
