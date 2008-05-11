@@ -45,13 +45,14 @@ module Amazon
       item_args = (0..99).inject([:items]) do |all, i|
         all << :"Item.#{i}.ASIN"
         all << :"Item.#{i}.OfferListingId"
+        all << :"Item.#{i}.CartItemId"
         all << :"Item.#{i}.Quantity"
         all
       end
 
       if operation == 'CartCreate'
         base_args + item_args
-      elsif operation == 'CartAdd'
+      elsif %w{CartAdd CartModify}.include? operation
         base_args + item_args + cart_args
       elsif operation == 'CartGet'
         base_args + cart_args

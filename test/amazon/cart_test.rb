@@ -23,6 +23,16 @@ class Amazon::A2s::CartTest < Test::Unit::TestCase
     assert_equal 2, result.cart.items.size # Has both items
     assert_equal 6, result.cart.items.sum {|i| i.int_at(:quantity) } # 6 total
     assert       result.cart.items.include?(@stopper) # includes the new
-    assert_equal result.cart.items.find {|i| i == @stopper }.int_at(:quantity), 5 # 5 of the new (hence 1 of the other
+    assert_equal 5, result.cart.items.find {|i| i == @stopper }.int_at(:quantity) # 5 of the new (hence 1 of the other
+  end
+
+  def test_cart_modify
+    result = Amazon::A2s.cart_modify(@create_response.cart.to_hash.slice(:cartid, :urlencodedhmac).merge(
+                                     :items => {@create_response.cart.items[0] => 5}))
+
+    assert_equal 1, result.cart.items.size
+    assert_equal 5, result.cart.items.sum {|i| i.int_at(:quantity) }
+    assert       result.cart.items.include?(@potter)
+    assert_equal 5, result.cart.items.find {|i| i == @potter }.int_at(:quantity)
   end
 end

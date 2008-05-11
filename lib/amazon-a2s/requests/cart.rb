@@ -12,11 +12,14 @@ module Amazon
   class A2s
   private
     def self.unpack_item(opts, index, item, count = 1)
-      unless [:offer_listing_id, :asin, :list_item_id].any?{|id| item.has_key?(id)}
+      item = item.to_hash.dup
+      unless [:offer_listing_id, :asin, :list_item_id, :cart_item_id].any?{|id| item.has_key?(id)}
         raise ArgumentError, "item needs an OfferListingId, ASIN, or ListItemId"
       end
 
-      if id = item.delete(:offer_listing_id)
+      if id = item.delete(:cartitemid)
+        opts[:"Item.#{index}.CartItemId"] = id
+      elsif id = item.delete(:offer_listing_id)
         opts[:"Item.#{index}.OfferListingId"] = id
       elsif id = item.delete(:asin)
         opts["Item.#{index}.ASIN"] = id
@@ -70,11 +73,12 @@ module Amazon
     # _quantity_ defaults to 0 to remove the given _cart_item_id_
     # specify _quantity_ to update cart contents
     request :cart_modify => :cart_id do |opts|
-      asin = opts.delete(:asin)
-      opts["Item.#{asin}.Quantity"] = opts.delete(:quantity)
-      opts["Item.#{asin}.ASIN"] = asin
-
-      opts.map_keys!(:hMAC => :hmac)
+      opts = unpack_items(opts)
+      opts[:cart_id] ||= opts.delete(:cartid)
+      opts[:hMAC] ||= opts.delete(:urlencodedhmac)
+      opts.map_keys!(:cart_id => :cartid,
+                     :cart_id => :id,
+                     :hMAC => :hmac)
     end
 
     # clears contents of remote shopping cart
