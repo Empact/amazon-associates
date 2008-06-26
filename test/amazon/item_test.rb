@@ -68,19 +68,19 @@ class Amazon::A2s::ItemTest < Test::Unit::TestCase
     item = Amazon::A2s.item_search('ipod', :search_index => 'All', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.first
 
     # Measurements & Image
-    assert_equal(Amazon::Image.new("http://ecx.images-amazon.com/images/I/21qb6grULjL._SL75_.jpg",
-														      Amazon::Measurement.new(40, 'pixels'),
-														      Amazon::Measurement.new(75, 'pixels')),
+    assert_equal(Amazon::Image.new("http://ecx.images-amazon.com/images/I/41mNXW9CAXL._SL75_.jpg",
+                                  Amazon::Measurement.new(56, 'pixels'),
+                                  Amazon::Measurement.new(75, 'pixels')),
       item.hash_at("smallimage"))
 
-    assert_equal "40x75", item.hash_at("smallimage").size
+    assert_equal "56x75", item.hash_at("smallimage").size
 
     # bools
     assert_equal true, item.bool_at('iseligibleforsupersavershipping')
     assert_equal false, item.bool_at('batteriesincluded')
 
     # price
-    assert_equal Amazon::Price.new('$149.00', 14900, 'USD'), item.hash_at('listprice')
+    assert_equal Amazon::Price.new('$249.00', 24900, 'USD'), item.hash_at('listprice')
 
     # integers
     assert_instance_of Fixnum, item.hash_at('totalnew')
