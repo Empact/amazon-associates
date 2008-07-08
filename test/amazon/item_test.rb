@@ -64,6 +64,10 @@ class Amazon::A2s::ItemTest < Test::Unit::TestCase
     assert_equal Amazon::Ordinal.new(2), item.hash_at('edition')
   end
 
+  def test_item_search_should_handle_string_argument_keys_as_well_as_symbols
+    Amazon::A2s.item_search('potter', 'search_index' => 'Books')
+  end
+
   def test_hash_at_handles_specific_types
     item = Amazon::A2s.item_search('ipod', :search_index => 'All', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.first
 
