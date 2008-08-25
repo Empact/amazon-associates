@@ -6,12 +6,12 @@ module Amazon
     MAX_ITEMS = 99
 
     SERVICE_URLS = {
-        :us => 'http://webservices.amazon.com/onca/xml?Service=AWSECommerceService',
-        :uk => 'http://webservices.amazon.co.uk/onca/xml?Service=AWSECommerceService',
-        :ca => 'http://webservices.amazon.ca/onca/xml?Service=AWSECommerceService',
-        :de => 'http://webservices.amazon.de/onca/xml?Service=AWSECommerceService',
-        :jp => 'http://webservices.amazon.co.jp/onca/xml?Service=AWSECommerceService',
-        :fr => 'http://webservices.amazon.fr/onca/xml?Service=AWSECommerceService'
+        :us => 'http://webservices.amazon.com/onca/xml?',
+        :uk => 'http://webservices.amazon.co.uk/onca/xml?',
+        :ca => 'http://webservices.amazon.ca/onca/xml?',
+        :de => 'http://webservices.amazon.de/onca/xml?',
+        :jp => 'http://webservices.amazon.co.jp/onca/xml?',
+        :fr => 'http://webservices.amazon.fr/onca/xml?'
     }
 
     def self.request(actions, &block)
@@ -75,19 +75,19 @@ module Amazon
 
     def self.prepare_url(opts)
       opts.to_options.assert_valid_keys(*valid_arguments(opts[:operation]))
+      opts.merge!(:service => 'AWSECommerceService')
 
       country = opts.delete(:country) || 'us'
       request_url = SERVICE_URLS.fetch(country.to_sym) do
         raise Amazon::RequestError, "Invalid country '#{country}'"
       end
 
-      qs = ''
-      opts.each_pair do |k,v|
+      qs = opts.map do |(k,v)|
         next unless v
         v *= ',' if v.is_a? Array
         v = URI.encode(v.to_s) unless k == :hMAC
-        qs << "&#{k.to_s.camelize}=#{ v.to_s }"
-      end
+        "#{k.to_s.camelize}=#{ v.to_s }"
+      end.join('&')
       "#{request_url}#{qs}"
     end
   end
