@@ -12,6 +12,7 @@ module Amazon
           opts[main_arg] = args.first unless args.empty?
           opts[:operation] = action.to_s.camelize
 
+          
           yield opts if block_given?
           send_request(opts)
         end

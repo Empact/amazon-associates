@@ -32,8 +32,11 @@ class Hash
   end
   
   def map_keys!(keys)
-    keys.each_pair do |new, old|
-      store(new, delete(old)) if has_key?(old)
+    keys.each_pair do |new, olds|
+      olds = [olds] unless olds.respond_to? :each
+      olds.each do |old|
+        store(new, delete(old)) if has_key?(old)    
+      end
     end
   end
 end

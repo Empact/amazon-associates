@@ -41,9 +41,7 @@ module Amazon
     # Adds item to remote shopping cart
     request :cart_add => :cart_id do |opts|
       opts = unpack_items(opts)
-      opts[:cart_id] ||= opts.delete(:cartid)
-      opts.map_keys!(:cart_id => :cartid,
-                     :cart_id => :id,
+      opts.map_keys!(:cart_id => [:cartid, :id],
                      :hMAC => :hmac)
 #      raise opts.pp_to_s
     end
@@ -53,9 +51,7 @@ module Amazon
       if opts.has_key? :id and opts.has_key? :cart_id and opts[:id] != opts[:cart_id]
         raise ArgumentError, "the id and cart_id parameters are both specified, when the have the same meaning"
       end
-      opts[:cart_id] ||= opts.delete(:cartid)
-      opts.map_keys!(:cart_id => :cartid,
-                     :cart_id => :id,
+      opts.map_keys!(:cart_id => [:cartid, :id],
                      :hMAC => :hmac)
     end
 
@@ -64,17 +60,13 @@ module Amazon
     # specify _quantity_ to update cart contents
     request :cart_modify => :cart_id do |opts|
       opts = unpack_items(opts)
-      opts[:cart_id] ||= opts.delete(:cartid)
-      opts.map_keys!(:cart_id => :cartid,
-                     :cart_id => :id,
+      opts.map_keys!(:cart_id => [:cartid, :id],
                      :hMAC => :hmac)
     end
 
     # clears contents of remote shopping cart
     request :cart_clear => :cart_id do |opts|
-      opts[:cart_id] ||= opts.delete(:cartid)
-      opts.map_keys!(:cart_id => :cartid,
-                     :cart_id => :id,
+      opts.map_keys!(:cart_id => [:cartid, :id],
                      :hMAC => :hmac)
     end
   end
