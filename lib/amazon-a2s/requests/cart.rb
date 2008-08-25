@@ -44,7 +44,6 @@ module Amazon
       opts.rekey!(:cartid => :cart_id,
                   :id     => :cart_id,
                   :hmac   => :hMAC)
-#      raise opts.pp_to_s
     end
 
     # Adds item to remote shopping cart
