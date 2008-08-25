@@ -5,15 +5,6 @@ module Amazon
   class A2s
     MAX_ITEMS = 99
 
-    SERVICE_URLS = {
-        :us => 'http://webservices.amazon.com/onca/xml?',
-        :uk => 'http://webservices.amazon.co.uk/onca/xml?',
-        :ca => 'http://webservices.amazon.ca/onca/xml?',
-        :de => 'http://webservices.amazon.de/onca/xml?',
-        :jp => 'http://webservices.amazon.co.jp/onca/xml?',
-        :fr => 'http://webservices.amazon.fr/onca/xml?'
-    }
-
     def self.request(actions, &block)
       actions.each_pair do |action, main_arg|
         meta_def(action) do |*args|
@@ -72,17 +63,27 @@ module Amazon
          :title, :variation_page]
       end
     end
+    
+    def self.request_url(country)
+      tld = {
+          :us => 'com',
+          :uk => 'co.uk',
+          :ca => 'ca',
+          :de => 'de',
+          :jp => 'co.jp',
+          :fr => 'fr'
+      }.fetch((country || 'us').to_sym) do
+        raise Amazon::RequestError, "Invalid country '#{country}'"
+      end
+      
+      "http://webservices.amazon.#{tld}/onca/xml?"
+    end
 
     def self.prepare_url(opts)
       opts.to_options.assert_valid_keys(*valid_arguments(opts[:operation]))
       opts.merge!(:service => 'AWSECommerceService')
 
-      country = opts.delete(:country) || 'us'
-      request_url = SERVICE_URLS.fetch(country.to_sym) do
-        raise Amazon::RequestError, "Invalid country '#{country}'"
-      end
-
-      request_url + opts.each_key! {|k| k.to_s.camelize }.to_query
+      request_url(opts.delete(:country)) + opts.each_key! {|k| k.to_s.camelize }.to_query
     end
   end
 end
