@@ -50,7 +50,6 @@ module Amazon
     request :cart_add => :cart_id do |opts|
       opts = unpack_items(opts)
       opts[:cart_id] ||= opts.delete(:cartid)
-      opts[:hMAC] ||= opts.delete(:urlencodedhmac)
       opts.map_keys!(:cart_id => :cartid,
                      :cart_id => :id,
                      :hMAC => :hmac)
@@ -63,7 +62,6 @@ module Amazon
         raise ArgumentError, "the id and cart_id parameters are both specified, when the have the same meaning"
       end
       opts[:cart_id] ||= opts.delete(:cartid)
-      opts[:hMAC] ||= opts.delete(:urlencodedhmac)
       opts.map_keys!(:cart_id => :cartid,
                      :cart_id => :id,
                      :hMAC => :hmac)
@@ -75,7 +73,6 @@ module Amazon
     request :cart_modify => :cart_id do |opts|
       opts = unpack_items(opts)
       opts[:cart_id] ||= opts.delete(:cartid)
-      opts[:hMAC] ||= opts.delete(:urlencodedhmac)
       opts.map_keys!(:cart_id => :cartid,
                      :cart_id => :id,
                      :hMAC => :hmac)
@@ -84,7 +81,6 @@ module Amazon
     # clears contents of remote shopping cart
     request :cart_clear => :cart_id do |opts|
       opts[:cart_id] ||= opts.delete(:cartid)
-      opts[:hMAC] ||= opts.delete(:urlencodedhmac)
       opts.map_keys!(:cart_id => :cartid,
                      :cart_id => :id,
                      :hMAC => :hmac)

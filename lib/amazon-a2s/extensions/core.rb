@@ -21,3 +21,13 @@ class Float
     (self % 1) < 0.0001
   end
 end
+
+class Hash
+  def each_key!(&block)
+    each_key do |key|
+      val = delete(key)
+      new_key = yield key
+      store(new_key, val)
+    end
+  end
+end

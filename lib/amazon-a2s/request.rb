@@ -44,7 +44,7 @@ module Amazon
   private
     def self.valid_arguments(operation)
       base_args = [:aWS_access_key_id, :operation, :associate_tag, :response_group]
-      cart_args = [:cart_id, :url_encoded_hmac, :hMAC]
+      cart_args = [:cart_id, :hMAC]
       item_args = (0..MAX_ITEMS).inject([:items]) do |all, i|
         all << :"Item.#{i}.ASIN"
         all << :"Item.#{i}.OfferListingId"
@@ -82,13 +82,7 @@ module Amazon
         raise Amazon::RequestError, "Invalid country '#{country}'"
       end
 
-      qs = opts.map do |(k,v)|
-        next unless v
-        v *= ',' if v.is_a? Array
-        v = URI.encode(v.to_s) unless k == :hMAC
-        "#{k.to_s.camelize}=#{ v.to_s }"
-      end.join('&')
-      "#{request_url}#{qs}"
+      request_url + opts.each_key! {|k| k.to_s.camelize }.to_query
     end
   end
 end
