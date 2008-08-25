@@ -84,7 +84,10 @@ module Amazon
       opts.to_options.assert_valid_keys(*valid_arguments(opts[:operation]))
       opts.merge!(:service => 'AWSECommerceService')
 
-      request_url(opts.delete(:country)) + opts.each_key! {|k| k.to_s.camelize }.to_query
+      request_url(opts.delete(:country)) + opts.each_pair! do |k, v|
+        v *= ',' if v.is_a? Array
+        [k.to_s.camelize, v]
+      end.to_query
     end
   end
 end

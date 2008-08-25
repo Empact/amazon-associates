@@ -15,6 +15,11 @@ class Amazon::A2s::ItemTest < Test::Unit::TestCase
     assert resp.valid_request?
     assert 2, resp.item_page
   end
+  
+  def test_item_search_with_response_group_array
+    resp = Amazon::A2s.item_search('ruby', :response_group => %w{Small ItemAttributes Images})
+    assert resp.valid_request?
+  end
 
   def test_item_search_with_invalid_request
     assert_raise Amazon::RequiredParameterMissing do

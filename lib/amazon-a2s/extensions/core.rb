@@ -23,11 +23,11 @@ class Float
 end
 
 class Hash
-  def each_key!(&block)
+  def each_pair!(&block)
     each_key do |key|
       val = delete(key)
-      new_key = yield key
-      store(new_key, val)
+      new_key, new_val = yield key, val
+      store(new_key, new_val)
     end
   end
   
