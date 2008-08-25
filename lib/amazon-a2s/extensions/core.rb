@@ -30,4 +30,10 @@ class Hash
       store(new_key, val)
     end
   end
+  
+  def map_keys!(keys)
+    keys.each_pair do |new, old|
+      store(new, delete(old)) if has_key?(old)
+    end
+  end
 end
