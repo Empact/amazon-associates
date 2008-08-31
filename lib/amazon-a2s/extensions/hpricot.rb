@@ -105,7 +105,7 @@ module Hpricot
       elsif result.name.ends_with? 'price' or result.name.ends_with? 'total'
         Amazon::Price.new(result.text_at('formattedprice'), result.int_at('amount'), result.text_at('currencycode'))
       elsif result.name.ends_with? 'image'
-        Amazon::Image.new(result.text_at('url'), result.int_at('width'), result.int_at('height'))
+        Amazon::Image.parse(result.to_s)
       else
         if (result.children.size > 1 or !result.children.first.is_a? Text) and names = result.children.collect {|c| c.name }.uniq and names.size == 1 and names[0].pluralize == result.name
           result.children.map(&:to_hash)

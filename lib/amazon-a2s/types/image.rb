@@ -1,6 +1,13 @@
+require 'roxml'
+require File.join(File.dirname(__FILE__), 'measurement')
+
 module Amazon
   class Image
-    attr_reader :url, :width, :height
+    include ROXML
+
+    xml_text :url, :as => :readonly
+    xml_object :width, Measurement, :as => :readonly
+    xml_object :height, Measurement, :as => :readonly
 
     def initialize(url, width, height)
       @url = url
