@@ -5,7 +5,6 @@ require 'pathname'
 Rake::TestTask.new(:test) do |t|
   t.pattern = 'test/**/*_test.rb'
   t.verbose = true
-  t.warning = true
 end
 
 namespace :test do
@@ -18,7 +17,6 @@ namespace :test do
     Rake::TestTask.new(type.to_sym) do |t|
       t.pattern = "test/**/#{type}_test.rb"
       t.verbose = true
-      t.warning = true
     end
   end
 end
