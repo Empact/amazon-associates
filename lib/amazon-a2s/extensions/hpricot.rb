@@ -93,7 +93,7 @@ module Hpricot
       elsif ['batteriesincluded', 'iseligibleforsupersavershipping', 'isautographed', 'ismemorabilia', 'isvalid'].include? result.name
         result.to_bool
       elsif result.name == 'browsenode'
-        Amazon::BrowseNode.new(result.text_at('browsenodeid'), result.text_at('name'), result.hash_at('ancestors/browsenode'))
+        Amazon::BrowseNode.parse(result.to_s)
       elsif result.name == 'edition'
         begin
           Amazon::Ordinal.new(result.to_int)

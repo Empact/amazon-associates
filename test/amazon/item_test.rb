@@ -15,7 +15,7 @@ class Amazon::A2s::ItemTest < Test::Unit::TestCase
     assert resp.valid_request?
     assert 2, resp.item_page
   end
-  
+
   def test_item_search_with_response_group_array
     resp = Amazon::A2s.item_search('ruby', :response_group => %w{Small ItemAttributes Images})
     assert resp.valid_request?
@@ -74,7 +74,7 @@ class Amazon::A2s::ItemTest < Test::Unit::TestCase
   end
 
   def test_hash_at_handles_specific_types
-    item = Amazon::A2s.item_search('ipod', :search_index => 'All', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.first
+    item = Amazon::A2s.item_search('ipod', :search_index => 'All', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images,BrowseNodes').items.first
 
     # Measurements & Image
     assert_equal(Amazon::Image.new("http://ecx.images-amazon.com/images/I/41mNXW9CAXL._SL75_.jpg",
@@ -99,6 +99,13 @@ class Amazon::A2s::ItemTest < Test::Unit::TestCase
     assert_equal({:category=>"primary"}, item.hash_at('imageset')[:attributes])
     element = Amazon::A2s.item_lookup('0545010225').items.first.hash_at('itemattributes/creator')
     assert_equal(Hpricot::Element.new("Mary GrandPré", :role => 'Illustrator'), element)
+
+    # browsenodes
+    nodes = item.hash_at('browsenode')
+    assert_equal 'MP3 Players', nodes.name
+    assert_equal 'Audio & Video', nodes.parent.name
+    assert_equal 'Apple', nodes.parent.parent.name
+    assert_equal 'Custom Brands', nodes.parent.parent.parent.name
 
     # ordinals
     # in test_text_at, above
