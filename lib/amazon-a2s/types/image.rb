@@ -2,9 +2,9 @@ module Amazon
   class Image
     include ROXML
 
-    xml_text :url, :as => :readonly
-    xml_object :width, Measurement, :as => :readonly
-    xml_object :height, Measurement, :as => :readonly
+    xml_reader :url
+    xml_reader :width, Measurement
+    xml_reader :height, Measurement
 
     def initialize(url, width, height)
       @url = url

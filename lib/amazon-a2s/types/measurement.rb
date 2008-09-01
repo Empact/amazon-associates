@@ -4,8 +4,8 @@ module Amazon
     include Comparable
     attr_reader :value, :units
 
-    xml_text :value, :as => :text_content
-    xml_attribute :units
+    xml_reader :value, :as => :text_content
+    xml_reader :units, :attr
     xml_construct :value, :units
 
     def initialize(value, units = 'pixels')

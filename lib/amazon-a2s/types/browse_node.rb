@@ -2,9 +2,9 @@ module Amazon
   class BrowseNode
     include ROXML
 
-    xml_text :id, :from => :browsenodeid
-    xml_text :name
-    xml_object :parent, BrowseNode, :from => :browsenode, :in => :ancestors
+    xml_reader :id, :text => :browsenodeid
+    xml_reader :name
+    xml_reader :parent, BrowseNode, :from => :browsenode, :in => :ancestors
 
     def initialize(id, name, parent)
       @id = id
