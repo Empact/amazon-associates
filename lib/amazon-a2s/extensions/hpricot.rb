@@ -1,8 +1,9 @@
 require 'rubygems'
 require 'active_support'
+require 'roxml'
 
 # TODO: Untange this inter-dependency...
-%w{ browse_node image measurement ordinal price }.each do |type|
+%w{ browse_node measurement image ordinal price }.each do |type|
   require File.join(File.dirname(__FILE__), '..', 'types', type)
 end
 

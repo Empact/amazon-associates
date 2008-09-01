@@ -1,6 +1,3 @@
-require 'roxml'
-require File.join(File.dirname(__FILE__), 'measurement')
-
 module Amazon
   class Image
     include ROXML
