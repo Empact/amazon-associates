@@ -88,7 +88,7 @@ module Hpricot
       # TODO: date?, image? &c
       # TODO: This is super-ugly... is there a better way to map?
       if ['width', 'height', 'length', 'weight'].include? result.name
-        Amazon::Measurement.new(result.to_int, result.attributes['units'])
+        Amazon::Measurement.parse(result.to_s)
       elsif ['batteriesincluded', 'iseligibleforsupersavershipping', 'isautographed', 'ismemorabilia', 'isvalid'].include? result.name
         result.to_bool
       elsif result.name == 'browsenode'

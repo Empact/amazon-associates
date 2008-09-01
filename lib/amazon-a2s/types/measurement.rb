@@ -1,14 +1,14 @@
 module Amazon
   class Measurement
+    include ROXML
     include Comparable
     attr_reader :value, :units
 
-    def initialize(value, units = 'pixels')
-      if value.is_a?(LibXML::XML::Node)
-        units = value['units']
-        value = value.content
-      end
+    xml_text :value, :as => :text_content
+    xml_attribute :units
+    xml_construct :value, :units
 
+    def initialize(value, units = 'pixels')
       @value = Float(value)
       @units = units.to_s
 
