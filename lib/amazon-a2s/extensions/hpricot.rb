@@ -104,7 +104,7 @@ module Hpricot
       elsif result.name.starts_with? 'total' or result.name.starts_with? 'number' or ['quantity'].include? result.name
         result.to_int
       elsif result.name.ends_with? 'price' or result.name.ends_with? 'total'
-        Amazon::Price.new(result.text_at('formattedprice'), result.int_at('amount'), result.text_at('currencycode'))
+        Amazon::Price.parse(result.to_s)
       elsif result.name.ends_with? 'image'
         Amazon::Image.parse(result.to_s)
       else
