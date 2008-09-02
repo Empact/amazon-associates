@@ -42,11 +42,7 @@ module Hpricot
     end
 
     induce :int do |result|
-      result = result.inner_html
-      if result.to_i.zero? and !result.starts_with?('0')
-        raise TypeError, "failed to convert String #{result.inspect} into Integer"
-      end
-      result.to_i
+      Integer(result.inner_html)
     end
 
     induce :bool do |result|
@@ -96,7 +92,7 @@ module Hpricot
         Amazon::BrowseNode.parse(result.to_s)
       elsif result.name == 'edition'
         begin
-          Amazon::Ordinal.new(result.to_int)
+          Amazon::Ordinal.parse(result.to_s)
         rescue TypeError
           # a few edition types aren't ordinals, but strings (e.g., "First American Edition")
           result.to_text

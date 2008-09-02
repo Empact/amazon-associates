@@ -1,6 +1,10 @@
 module Amazon
   class Ordinal
-    attr_reader :value
+    include Comparable
+    include ROXML
+    xml_reader :value, :as => :text_content do |val|
+      val.to_i
+    end
 
     def initialize(value)
       @value = value.to_i
@@ -10,7 +14,7 @@ module Amazon
       @value.ordinalize
     end
     alias_attribute :inspect, :to_s
-    
+
     def ==(other)
       @value == other
     end
