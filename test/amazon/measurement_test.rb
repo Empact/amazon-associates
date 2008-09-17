@@ -20,9 +20,10 @@ class Amazon::A2s::MeasurementTest < Test::Unit::TestCase
   end
 
   def test_hundredths_support_with_xml_arg
-    xml = LibXML::XML::Node.new_element('width', '1130')
-    xml['units'] = 'hundredths-inches'
-    m = Amazon::Measurement.parse(xml)
+    doc = LibXML::XML::Document.new
+    doc.root = LibXML::XML::Node.new_element('width', '1130')
+    doc.root['units'] = 'hundredths-inches'
+    m = Amazon::Measurement.parse(doc.root)
     assert_equal 11.3, m.value
     assert_equal 'inches', m.units
   end
