@@ -4,7 +4,7 @@ module Amazon
     include Comparable
     attr_reader :value, :units
 
-    xml_reader :value, :text_content
+    xml_reader :value, :content
     xml_reader :units, :attr
     xml_construct :value, :units
 

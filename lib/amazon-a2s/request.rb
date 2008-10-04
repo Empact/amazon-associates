@@ -12,7 +12,6 @@ module Amazon
           opts[main_arg] = args.first unless args.empty?
           opts[:operation] = action.to_s.camelize
 
-          
           yield opts if block_given?
           send_request(opts)
         end
@@ -64,7 +63,7 @@ module Amazon
          :title, :variation_page]
       end
     end
-    
+
     def self.request_url(country)
       tld = {
           :us => 'com',
@@ -76,7 +75,7 @@ module Amazon
       }.fetch((country || 'us').to_sym) do
         raise Amazon::RequestError, "Invalid country '#{country}'"
       end
-      
+
       "http://webservices.amazon.#{tld}/onca/xml?"
     end
 

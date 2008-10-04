@@ -2,7 +2,7 @@ module Amazon
   class Ordinal
     include Comparable
     include ROXML
-    xml_reader :value, :text_content do |val|
+    xml_reader :value, :content do |val|
       val.to_i
     end
 
