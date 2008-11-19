@@ -2,10 +2,9 @@ module Amazon
   class Measurement
     include ROXML
     include Comparable
-    attr_reader :value, :units
 
     xml_reader :value, :content
-    xml_reader :units, :attr
+    xml_reader :units, :attr => 'Units'
     xml_construct :value, :units
 
     def initialize(value, units = 'pixels')

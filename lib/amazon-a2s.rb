@@ -1,3 +1,5 @@
+require 'roxml'
+
 %w(requests/cart requests/browse_node requests/item).each do |file|
   require File.join(File.dirname(__FILE__), 'amazon-a2s', file)
 end

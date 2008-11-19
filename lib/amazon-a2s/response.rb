@@ -1,50 +1,18 @@
-require 'hpricot'
-
-%w{ errors extensions/core extensions/hpricot }.each do |file|
+%w{ errors extensions/core types/operation_request
+   types/listmania_list types/browse_node types/measurement types/image types/item types/request types/cart
+   responses/item_search_response responses/browse_node_lookup_response }.each do |file|
   require File.join(File.dirname(__FILE__), file)
 end
 
 module Amazon
   class A2s
-    module DocWrapper
+    # Response object returned after a REST call to Amazon service.
+    class Response
       attr_accessor :doc
 
       def method_missing(method, *args)
         @doc.send(method, args)
       end
-    end
-
-    class Item
-      include DocWrapper
-
-      def initialize(doc)
-        @doc = doc
-      end
-
-      def ==(other)
-        @doc.text_at(:asin) == other.text_at(:asin)
-      end
-
-      def eql?(other)
-        @doc.string_at(:asin) == other.string_at(:asin)
-      end
-    end
-
-    class Cart
-      include DocWrapper
-
-      def initialize(doc)
-        @doc = doc
-      end
-
-      def items
-        @items ||= @doc.search(:cartitem).map {|i| Item.new(i) }
-      end
-    end
-
-    # Response object returned after a REST call to Amazon service.
-    class Response
-      include DocWrapper
 
       # XML input is in string format
       def initialize(url, xml)

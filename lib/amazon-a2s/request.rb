@@ -1,4 +1,7 @@
 require File.join(File.dirname(__FILE__), 'response')
+require File.join(File.dirname(__FILE__), 'responses/item_search_response')
+require File.join(File.dirname(__FILE__), 'responses/item_lookup_response')
+require File.join(File.dirname(__FILE__), 'responses/cart_create_response')
 require 'net/http'
 
 module Amazon
@@ -29,7 +32,9 @@ module Amazon
       unless res.kind_of? Net::HTTPSuccess
         raise Amazon::RequestError, "HTTP Response: #{res.code} #{res.message}"
       end
-      Response.new(request_url, res.body)
+      eval(ROXML::XML::Parser.parse(res.body).root.name).from_xml(res.body) do |response|
+        response.url = request_url
+      end
     end
 
   private

@@ -85,14 +85,14 @@ module Hpricot
       # TODO: date?, image? &c
       # TODO: This is super-ugly... is there a better way to map?
       if ['width', 'height', 'length', 'weight'].include? result.name
-        Amazon::Measurement.parse(result.to_s)
+        Amazon::Measurement.from_xml(result.to_s)
       elsif ['batteriesincluded', 'iseligibleforsupersavershipping', 'isautographed', 'ismemorabilia', 'isvalid'].include? result.name
         result.to_bool
       elsif result.name == 'browsenode'
-        Amazon::BrowseNode.parse(result.to_s)
+        Amazon::BrowseNode.from_xml(result.to_s)
       elsif result.name == 'edition'
         begin
-          Amazon::Ordinal.parse(result.to_s)
+          Amazon::Ordinal.from_xml(result.to_s)
         rescue TypeError
           # a few edition types aren't ordinals, but strings (e.g., "First American Edition")
           result.to_text
@@ -100,9 +100,9 @@ module Hpricot
       elsif result.name.starts_with? 'total' or result.name.starts_with? 'number' or ['quantity'].include? result.name
         result.to_int
       elsif result.name.ends_with? 'price' or result.name.ends_with? 'total'
-        Amazon::Price.parse(result.to_s)
+        Amazon::Price.from_xml(result.to_s)
       elsif result.name.ends_with? 'image'
-        Amazon::Image.parse(result.to_s)
+        Amazon::Image.from_xml(result.to_s)
       else
         if (result.children.size > 1 or !result.children.first.is_a? Text) and names = result.children.collect {|c| c.name }.uniq and names.size == 1 and names[0].pluralize == result.name
           result.children.map(&:to_hash)

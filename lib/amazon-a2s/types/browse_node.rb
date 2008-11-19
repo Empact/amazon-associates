@@ -1,10 +1,16 @@
 module Amazon
+  class Item
+    # forward-declaration...
+  end
+
   class BrowseNode
     include ROXML
 
-    xml_reader :id, :text => :browsenodeid
+    xml_reader :id, :text => 'browsenodeid'
     xml_reader :name
     xml_reader :parent, BrowseNode, :from => :browsenode, :in => :ancestors
+    xml_reader :children, [BrowseNode], :from => 'children'
+    xml_reader :top_sellers, [Item], :from => 'TopSeller', :in => 'TopSellers'
 
     def initialize(id, name, parent)
       @id = id
