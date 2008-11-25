@@ -3,8 +3,8 @@ module Amazon
     include ROXML
 
     xml_reader :url, :from => 'URL'
-    xml_reader :width, Measurement, :from => 'Height'
-    xml_reader :height, Measurement, :from => 'Width'
+    xml_reader :width, Measurement, :from => 'Width'
+    xml_reader :height, Measurement, :from => 'Height'
 
     def initialize(url, width, height)
       @url = url

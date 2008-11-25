@@ -89,12 +89,12 @@ module Amazon
         item = Amazon::A2s.item_search('ipod', :search_index => 'All', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images,BrowseNodes').items.first
 
         # Measurements & Image
-        assert_equal(Amazon::Image.new("http://ecx.images-amazon.com/images/I/41mNXW9CAXL._SL75_.jpg",
+        assert_equal(Amazon::Image.new("http://ecx.images-amazon.com/images/I/41zt-RXYhfL._SL75_.jpg",
                                       Amazon::Measurement.new(56, 'pixels'),
                                       Amazon::Measurement.new(75, 'pixels')),
           item.small_image)
 
-        assert_equal "56x75", item.hash_at("smallimage").size
+        assert_equal "56x75", item.small_image.size
 
         # bools
         assert_equal true, item.bool_at('iseligibleforsupersavershipping')
