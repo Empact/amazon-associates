@@ -6,10 +6,10 @@ module Amazon
   class BrowseNode
     include ROXML
 
-    xml_reader :id, :text => 'browsenodeid'
-    xml_reader :name
-    xml_reader :parent, BrowseNode, :from => :browsenode, :in => :ancestors
-    xml_reader :children, [BrowseNode], :from => 'children'
+    xml_reader :id, :text => 'BrowseNodeId'
+    xml_reader :name, :from => 'Name'
+    xml_reader :parent, BrowseNode, :from => 'BrowseNode', :in => 'Ancestors'
+    xml_reader :children, [BrowseNode], :from => 'Children'
     xml_reader :top_sellers, [Item], :from => 'TopSeller', :in => 'TopSellers'
 
     def initialize(id, name, parent)
@@ -23,7 +23,7 @@ module Amazon
     end
 
     def inspect
-      sprintf("#<%s:%s %s>", self.class.to_s, @id, self)
+      "#<#{self.class}:#{@id} #{self}>"
     end
 
     def ==(other)

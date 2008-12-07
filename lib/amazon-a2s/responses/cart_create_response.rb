@@ -1,11 +1,7 @@
-require 'roxml'
-
 module Amazon
   class A2s
-    class CartCreateResponse
-      include ROXML
-
-      xml_name :cartcreateresponse
+    class CartCreateResponse < Response
+      xml_name 'CartCreateResponse'
       xml_reader :cart, Cart, :from => 'Cart', :required => true
     end
   end

@@ -34,19 +34,19 @@ module Amazon
       end
 
       def test_item_search_with_invalid_request
-        assert_raise Amazon::RequiredParameterMissing do
+        assert_raise Amazon::A2s::RequiredParameterMissing do
           Amazon::A2s.item_search(nil)
         end
       end
 
       def test_item_search_with_no_result
-        assert_raise Amazon::ItemNotFound, ' We did not find any matches for your request.' do
+        assert_raise Amazon::A2s::ItemNotFound, ' We did not find any matches for your request.' do
           Amazon::A2s.item_search('afdsafds')
         end
       end
 
       def test_item_search_uk
-        resp = Amazon::A2s.item_search('ruby', :country => :uk)
+        resp = Amazon::A2s.item_search('ruby', :country => 'uk')
         assert resp.request.valid?
       end
 
@@ -56,7 +56,7 @@ module Amazon
       end
 
       def test_item_search_fake_country_should_throw
-        assert_raise Amazon::RequestError do
+        assert_raise Amazon::A2s::RequestError do
           Amazon::A2s.item_search('ruby', :country => :asfdkjjk)
         end
       end
@@ -71,11 +71,11 @@ module Amazon
 
         # one item
         assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition",
-          item.attributes['title']
+          item.attributes['Title']
 
         # multiple items
         assert_equal ['Dave Thomas', 'Chad Fowler', 'Andy Hunt'],
-          item.author
+          item.authors
 
         #ordinals
         assert_equal Amazon::Ordinal.new(2), item.edition
@@ -89,7 +89,7 @@ module Amazon
         item = Amazon::A2s.item_search('ipod', :search_index => 'All', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images,BrowseNodes').items.first
 
         # Measurements & Image
-        assert_equal(Amazon::Image.new("http://ecx.images-amazon.com/images/I/41zt-RXYhfL._SL75_.jpg",
+        assert_equal(Amazon::Image.new("http://ecx.images-amazon.com/images/I/41qEH4hLTRL._SL75_.jpg",
                                       Amazon::Measurement.new(56, 'pixels'),
                                       Amazon::Measurement.new(75, 'pixels')),
           item.small_image)
@@ -97,23 +97,23 @@ module Amazon
         assert_equal "56x75", item.small_image.size
 
         # bools
-        assert_equal true, item.bool_at('iseligibleforsupersavershipping')
-        assert_equal false, item.bool_at('batteriesincluded')
+        assert !item.offers.empty?
+        assert_equal true, item.offers.first.is_eligible_for_super_saver_shipping?
+        assert_equal false, item.batteries_included?
 
         # price
-        assert_equal Amazon::Price.new('$249.00', 24900, 'USD'), item.hash_at('listprice')
+        assert_equal Amazon::Price.new('$149.99', 14999, 'USD'), item.list_price
 
         # integers
-        assert_instance_of Fixnum, item.hash_at('totalnew')
-        assert_instance_of Fixnum, item.hash_at('totaloffers')
+        assert_instance_of Fixnum, item.total_new_offers
+        assert_instance_of Fixnum, item.total_offers
 
         # attributes
-        assert_equal({:category=>"primary"}, item.hash_at('imageset')[:attributes])
-        element = Amazon::A2s.item_lookup('0545010225').items.first.hash_at('itemattributes/creator')
-        assert_equal(Hpricot::Element.new("Mary GrandPré", :role => 'Illustrator'), element)
+        assert_equal "primary", item.image_sets.first.category
+        assert_equal "Mary GrandPré", Amazon::A2s.item_lookup('0545010225').item.creators['Illustrator']
 
         # browsenodes
-        nodes = item.hash_at('browsenode')
+        nodes = item.browse_nodes.detect {|n| n.name == 'MP3 Players' }
         assert_equal 'MP3 Players', nodes.name
         assert_equal 'Audio & Video', nodes.parent.name
         assert_equal 'Apple', nodes.parent.parent.name
@@ -124,8 +124,7 @@ module Amazon
       end
 
       def test_price_should_handle_Price_Too_Low_To_Display
-        item = Amazon::A2s.item_lookup('B000W79GQA', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.first
-        assert item.to_hash
+        assert_equal 'Too low to display', Amazon::A2s.item_lookup('B000W79GQA', :response_group => 'Offers').item.lowest_new_price.to_s
       end
 
       def test_hash_at_handles_string_editions
@@ -138,53 +137,44 @@ module Amazon
         item = Amazon::A2s.item_search("0974514055", :response_group => 'Large').items.first
 
         # when <listmanialists> contains a bunch of <listmanialist>s, return an array
-        assert_equal([{:listid=>"R14L8RHCLAYQMY", :listname=>"Ruby on Rails"},
-                      {:listid=>"RCWKKCCVL5FGL",  :listname=>"Survey of programming languages/paradigms"},
-                      {:listid=>"R2IJ2M3X3ITVAR", :listname=>"The path to enlightenment"},
-                      {:listid=>"R3MGYO2P65FC8J", :listname=>"Ruby Books"},
-                      {:listid=>"R3AEQKTMFEETCN", :listname=>"Ruby & Rails From Novice To Expert"},
-                      {:listid=>"R2VY37TQWQM0VJ", :listname=>"Computer Science classics"},
-                      {:listid=>"R3DB3MYO22PHZ6", :listname=>"Ruby for Linguistics"},
-                      {:listid=>"R192F79G3UXHJ5", :listname=>"Programming Books"},
-                      {:listid=>"R1L6QNM215M7FB", :listname=>"Ruby/Ruby on Rails"},
-                      {:listid=>"RROZA1M8ZJVR2",  :listname=>"Some books on web development"}],
-           item.listmania_lists)
+        assert_equal(%w{R195F9SN6I3YQH R14L8RHCLAYQMY RCWKKCCVL5FGL R2IJ2M3X3ITVAR R3MGYO2P65FC8J R3AEQKTMFEETCN R2VY37TQWQM0VJ R3DB3MYO22PHZ6 R192F79G3UXHJ5 R1L6QNM215M7FB},
+           item.listmania_lists.map(&:id))
 
+        review = item.editorial_reviews.first
         # when there's a single child, make sure it's parsed rather than returned as a string
-        assert_equal item.hash_at('editorialreviews')[0][:source], "Product Description"
-        assert item.hash_at('editorialreviews')[0][:content].is_a?(String)
-        assert item.hash_at('editorialreviews')[0][:content].size > 100
-        assert item.hash_at('editorialreviews')[0][:content].starts_with?("Ruby is an increasingly popular, fully object-oriented d")
+        assert_equal "Product Description", review.source
+        assert review.content.is_a?(String)
+        assert review.content.size > 100
+        assert review.content.starts_with?("Ruby is an increasingly popular, fully object-oriented d")
       end
 
       ## Test item_lookup
       def test_item_lookup
         resp = Amazon::A2s.item_lookup('0974514055')
         assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition",
-        resp.items.first.text_at("itemattributes/title")
+                     resp.item.attributes['Title']
       end
 
       def test_item_lookup_with_invalid_request
-        assert_raise Amazon::RequiredParameterMissing, 'Your request is missing required parameters. Required parameters include ItemId.' do
+        assert_raise Amazon::A2s::RequiredParameterMissing, 'Your request is missing required parameters. Required parameters include ItemId.' do
           Amazon::A2s.item_lookup(nil)
         end
       end
 
       def test_item_lookup_with_no_result
-        assert_raise Amazon::InvalidParameterValue, 'ABC is not a valid value for ItemId. Please change this value and retry your request.' do
-          Amazon::A2s.item_lookup('abc')
+        assert_raise Amazon::A2s::InvalidParameterValue, 'ABC is not a valid value for ItemId. Please change this value and retry your request.' do
+          resp = Amazon::A2s.item_lookup('abc')
+          raise resp.inspect
         end
       end
 
       def test_hpricot_extensions
-        resp = Amazon::A2s.item_lookup('0974514055')
-        title = resp.items.first.text_at("itemattributes/title")
-        authors = resp.items.first/"author"
+        item = Amazon::A2s.item_lookup('0974514055').item
 
-        assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition", title
-        assert authors.is_a?(Array)
-        assert 3, authors.size
-        assert_equal "Dave Thomas", authors.first.to_text
+        assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition", item.attributes['Title']
+        assert item.authors.is_a?(Array)
+        assert 3, item.authors.size
+        assert_equal "Dave Thomas", item.authors.first
       end
     end
   end

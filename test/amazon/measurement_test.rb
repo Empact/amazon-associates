@@ -22,7 +22,7 @@ class Amazon::A2s::MeasurementTest < Test::Unit::TestCase
   def test_hundredths_support_with_xml_arg
     doc = ROXML::XML::Document.new
     doc.root = ROXML::XML::Node.new_element('width', '1130')
-    doc.root['units'] = 'hundredths-inches'
+    doc.root['Units'] = 'hundredths-inches'
     m = Amazon::Measurement.from_xml(doc.root)
     assert_equal 11.3, m.value
     assert_equal 'inches', m.units

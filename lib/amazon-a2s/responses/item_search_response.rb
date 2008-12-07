@@ -1,11 +1,7 @@
-require 'roxml'
-
 module Amazon
   class A2s
-    class ItemSearchResponse
-      include ROXML
-
-      xml_name :itemsearchresponse
+    class ItemSearchResponse < Response
+      xml_name 'ItemSearchResponse'
 
       attr_accessor :url # TODO would be just a reader if we can figure out xml construction better
       xml_reader :operation_request, OperationRequest, :from => 'OperationRequest'

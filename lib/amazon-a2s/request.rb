@@ -6,8 +6,6 @@ require 'net/http'
 
 module Amazon
   class A2s
-    MAX_ITEMS = 99
-
     def self.request(actions, &block)
       actions.each_pair do |action, main_arg|
         meta_def(action) do |*args|
@@ -21,6 +19,7 @@ module Amazon
       end
     end
 
+  private
     # Generic send request to ECS REST service. You have to specify the :operation parameter.
     def self.send_request(opts)
       opts.to_options!
@@ -32,53 +31,52 @@ module Amazon
       unless res.kind_of? Net::HTTPSuccess
         raise Amazon::RequestError, "HTTP Response: #{res.code} #{res.message}"
       end
-      eval(ROXML::XML::Parser.parse(res.body).root.name).from_xml(res.body) do |response|
-        response.url = request_url
-      end
+      eval(ROXML::XML::Parser.parse(res.body).root.name).from_xml(res.body, request_url)
     end
 
-  private
+    BASE_ARGS = [:aWS_access_key_id, :operation, :associate_tag, :response_group]
+    CART_ARGS = [:cart_id, :hMAC]
+    ITEM_ARGS = (0..99).inject([:items]) do |all, i|
+      all << :"Item.#{i}.ASIN"
+      all << :"Item.#{i}.OfferListingId"
+      all << :"Item.#{i}.CartItemId"
+      all << :"Item.#{i}.Quantity"
+      all
+    end
+    OTHER_ARGS = [
+      :item_page, :item_id, :country, :type, :item_type,
+      :browse_node_id, :actor, :artist, :audience_rating, :author,
+      :availability, :brand, :browse_node, :city, :composer,
+      :condition, :conductor, :director, :page, :keywords,
+      :manufacturer, :maximum_price, :merchant_id,
+      :minimum_price, :neighborhood, :orchestra,
+      :postal_code, :power, :publisher, :search_index, :sort,
+      :tag_page, :tags_per_page, :tag_sort, :text_stream,
+      :title, :variation_page
+    ]
+    VALID_ARGS = {
+      'CartCreate' => ITEM_ARGS,
+      'CartAdd' => ITEM_ARGS + CART_ARGS,
+      'CartModify' => ITEM_ARGS + CART_ARGS,
+      'CartGet' => CART_ARGS,
+      'CartClear' => CART_ARGS
+    }
+
     def self.valid_arguments(operation)
-      base_args = [:aWS_access_key_id, :operation, :associate_tag, :response_group]
-      cart_args = [:cart_id, :hMAC]
-      item_args = (0..MAX_ITEMS).inject([:items]) do |all, i|
-        all << :"Item.#{i}.ASIN"
-        all << :"Item.#{i}.OfferListingId"
-        all << :"Item.#{i}.CartItemId"
-        all << :"Item.#{i}.Quantity"
-        all
-      end
-
-      if operation == 'CartCreate'
-        base_args + item_args
-      elsif %w{CartAdd CartModify}.include? operation
-        base_args + item_args + cart_args
-      elsif %w{CartGet CartClear}.include? operation
-        base_args + cart_args
-      else
-        base_args + [
-         :item_page, :item_id, :country, :type, :item_type,
-         :browse_node_id, :actor, :artist, :audience_rating, :author,
-         :availability, :brand, :browse_node, :city, :composer,
-         :condition, :conductor, :director, :page, :keywords,
-         :manufacturer, :maximum_price, :merchant_id,
-         :minimum_price, :neighborhood, :orchestra,
-         :postal_code, :power, :publisher, :search_index, :sort,
-         :tag_page, :tags_per_page, :tag_sort, :text_stream,
-         :title, :variation_page]
-      end
+      BASE_ARGS + VALID_ARGS.fetch(operation, OTHER_ARGS)
     end
 
+    TLDS = {
+        'us' => 'com',
+        'uk' => 'co.uk',
+        'ca' => 'ca',
+        'de' => 'de',
+        'jp' => 'co.jp',
+        'fr' => 'fr'
+    }
     def self.request_url(country)
-      tld = {
-          :us => 'com',
-          :uk => 'co.uk',
-          :ca => 'ca',
-          :de => 'de',
-          :jp => 'co.jp',
-          :fr => 'fr'
-      }.fetch((country || 'us').to_sym) do
-        raise Amazon::RequestError, "Invalid country '#{country}'"
+      tld = TLDS.fetch(country || 'us') do
+        raise RequestError, "Invalid country '#{country}'"
       end
 
       "http://webservices.amazon.#{tld}/onca/xml?"

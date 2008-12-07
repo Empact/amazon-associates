@@ -4,11 +4,9 @@ module Amazon
     include Comparable
     attr_reader :cents, :currency
 
-    xml_reader :to_s, :from => :formattedprice
-    xml_reader :currency, :from => :currencycode
-    xml_reader :cents, :from => :amount do |val|
-      Integer(val)
-    end
+    xml_reader :to_s, :from => 'FormattedPrice'
+    xml_reader :currency, :from => 'CurrencyCode'
+    xml_reader :cents, :from => 'Amount', :as => Integer
 
     def initialize(str, cents = nil, currency = nil)
       @to_s = str.to_s

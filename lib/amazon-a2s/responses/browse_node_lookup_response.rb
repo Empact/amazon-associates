@@ -1,11 +1,7 @@
-require 'roxml'
-
 module Amazon
   class A2s
-    class BrowseNodeLookupResponse
-      include ROXML
-
-      xml_name :browsenodelookupresponse
+    class BrowseNodeLookupResponse < Response
+      xml_name 'BrowseNodeLookupResponse'
       xml_reader :browse_nodes, [BrowseNode], :from => 'BrowseNode', :in => 'BrowseNodes'
     end
   end
