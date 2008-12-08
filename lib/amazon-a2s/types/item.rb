@@ -40,4 +40,10 @@ module Amazon
       authors.only
     end
   end
+
+  class CartItem < Item
+    # TODO: This could probably just be #id
+    xml_reader :cart_item_id, :from => 'CartItemId'
+    xml_reader :quantity, :from => 'Quantity', :as => Integer
+  end
 end

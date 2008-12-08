@@ -4,12 +4,6 @@ module Amazon
       xml_name 'ItemLookupResponse'
       xml_reader :items, [Item], :from => 'Item', :in => 'Items'
 
-      class << self
-        def error_location
-          'Items/Request/Errors'
-        end
-      end
-
       def item
         items.only
       end

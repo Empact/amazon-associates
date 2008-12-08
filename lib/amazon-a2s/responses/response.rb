@@ -3,7 +3,23 @@ module Amazon
     class Response
       include ROXML
 
-      xml_reader :errors, [Error], :from => 'Error', :in => "Items/Request/Errors" do |vals|
+      xml_reader :item_errors, [Error], :from => 'Error', :in => "Items/Request/Errors"
+      xml_reader :cart_errors, [Error], :from => 'Error', :in => "Cart/Request/Errors"
+
+      def errors
+        item_errors + cart_errors
+      end
+
+      def xml_initialize(url)
+        @url = url
+        # these can't be done as blocks because we need @url available
+        @cart_errors = process_errors(cart_errors)
+        @item_errors = process_errors(item_errors)
+        raise errors.first unless errors.empty?
+      end
+
+    private
+      def process_errors(vals)
         if vals.blank?
           []
         else
@@ -17,11 +33,6 @@ module Amazon
             end
           end
         end
-      end
-
-      def xml_initialize(url)
-        @url = url
-        raise errors.first unless errors.empty?
       end
     end
   end

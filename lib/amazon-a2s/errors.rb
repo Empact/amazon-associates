@@ -1,7 +1,6 @@
 module Amazon
   class A2s
     class RequestError < StandardError; end
-
     class InvalidParameterValue < ArgumentError; end
     class ParameterOutOfRange < InvalidParameterValue; end
     class RequiredParameterMissing < ArgumentError; end

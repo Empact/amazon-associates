@@ -20,25 +20,25 @@ class Amazon::A2s::CartTest < Test::Unit::TestCase
     result = Amazon::A2s.cart_add(@create_response.cart, :items => {@batman => 5})
 
     assert_equal 2, result.cart.items.size # Has both items
-    assert_equal 6, result.cart.items.sum {|i| i.int_at(:quantity) } # 6 total
+    assert_equal 6, result.cart.items.sum {|i| i.quantity } # 6 total
     assert       result.cart.items.include?(@batman) # includes the new
-    assert_equal 5, result.cart.items.find {|i| i == @batman }.int_at(:quantity) # 5 of the new (hence 1 of the other
+    assert_equal 5, result.cart.items.find {|i| i == @batman }.quantity # 5 of the new (hence 1 of the other
   end
 
   def test_cart_modify
     result = Amazon::A2s.cart_modify(@create_response.cart, :items => {@create_response.cart.items[0] => 5})
 
     assert_equal 1, result.cart.items.size
-    assert_equal 5, result.cart.items.sum {|i| i.int_at(:quantity) }
+    assert_equal 5, result.cart.items.sum {|i| i.quantity }
     assert       result.cart.items.include?(@potter)
-    assert_equal 5, result.cart.items.find {|i| i == @potter }.int_at(:quantity)
+    assert_equal 5, result.cart.items.find {|i| i == @potter }.quantity
   end
 
   def test_cart_clear
     result = Amazon::A2s.cart_clear(@create_response.cart)
 
     assert_equal 0, result.cart.items.size
-    assert_equal 0, result.cart.items.sum {|i| i.int_at(:quantity) }
+    assert_equal 0, result.cart.items.sum {|i| i.quantity }
     assert       !result.cart.items.include?(@potter)
   end
 end

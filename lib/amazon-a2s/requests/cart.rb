@@ -5,7 +5,9 @@ module Amazon
   private
     def self.unpack_item(opts, index, item, count = 1)
       case item
-      when Item
+      when Amazon::CartItem
+        opts[:"Item.#{index}.CartItemId"] = item.cart_item_id
+      when Amazon::Item
         opts["Item.#{index}.ASIN"] = item.asin
       else
         item = item.to_hash.dup
@@ -13,9 +15,7 @@ module Amazon
           raise ArgumentError, "item needs an OfferListingId, ASIN, or ListItemId"
         end
 
-        if id = item.delete(:cartitemid)
-          opts[:"Item.#{index}.CartItemId"] = id
-        elsif id = item.delete(:offer_listing_id)
+        if id = item.offer_listing_id
           opts[:"Item.#{index}.OfferListingId"] = id
         elsif id = item.delete(:asin)
           opts["Item.#{index}.ASIN"] = id
@@ -44,27 +44,27 @@ module Amazon
     end
 
     # Adds item to remote shopping cart
-    request :cart_add => :cart_id do |cart, opts|
+    request :cart_add => :cart do |opts|
       opts = unpack_items(opts)
-      opts.merge(cart.to_amazon_arg)
+      opts.merge(opts.delete(:cart).to_amazon_arg)
     end
 
     # Adds item to remote shopping cart
-    request :cart_get => :cart_id do |opts|
-      cart.to_amazon_arg
+    request :cart_get => :cart do |opts|
+      opts.merge(opts.delete(:cart).to_amazon_arg)
     end
 
     # modifies _cart_item_id_ in remote shopping cart
     # _quantity_ defaults to 0 to remove the given _cart_item_id_
     # specify _quantity_ to update cart contents
-    request :cart_modify => :cart_id do |cart, opts|
+    request :cart_modify => :cart do |opts|
       opts = unpack_items(opts)
-      opts.merge(cart.to_amazon_arg)
+      opts.merge(opts.delete(:cart).to_amazon_arg)
     end
 
     # clears contents of remote shopping cart
-    request :cart_clear => :cart_id do |cart|
-      cart.to_amazon_arg
+    request :cart_clear => :cart do |opts|
+      opts.merge(opts.delete(:cart).to_amazon_arg)
     end
   end
 end
