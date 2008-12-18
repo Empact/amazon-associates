@@ -89,12 +89,12 @@ module Amazon
         item = Amazon::A2s.item_search('ipod', :search_index => 'All', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images,BrowseNodes').items.first
 
         # Measurements & Image
-        assert_equal(Amazon::Image.new("http://ecx.images-amazon.com/images/I/416IhG9obPL._SL75_.jpg",
-                                      Amazon::Measurement.new(75, 'pixels'),
+        assert_equal(Amazon::Image.new("http://ecx.images-amazon.com/images/I/41qEH4hLTRL._SL75_.jpg",
+                                      Amazon::Measurement.new(56, 'pixels'),
                                       Amazon::Measurement.new(75, 'pixels')),
           item.small_image)
 
-        assert_equal "75x75", item.small_image.size
+        assert_equal "56x75", item.small_image.size
 
         # bools
         assert !item.offers.empty?
@@ -137,7 +137,8 @@ module Amazon
         item = Amazon::A2s.item_search("0974514055", :response_group => 'Large').items.first
 
         # when <listmanialists> contains a bunch of <listmanialist>s, return an array
-        assert_equal(%w{R195F9SN6I3YQH R14L8RHCLAYQMY RCWKKCCVL5FGL R2IJ2M3X3ITVAR R3MGYO2P65FC8J R3AEQKTMFEETCN R2VY37TQWQM0VJ R3DB3MYO22PHZ6 R192F79G3UXHJ5 R1L6QNM215M7FB},
+        assert_equal(["R195F9SN6I3YQH", "R14L8RHCLAYQMY", "RCWKKCCVL5FGL", "R2IJ2M3X3ITVAR", "R3MGYO2P65FC8J",
+                      "R2VY37TQWQM0VJ", "R3DB3MYO22PHZ6", "R192F79G3UXHJ5",  "R1L6QNM215M7FB", "RROZA1M8ZJVR2"],
            item.listmania_lists.map(&:id))
 
         review = item.editorial_reviews.first
