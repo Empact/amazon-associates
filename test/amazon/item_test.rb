@@ -14,6 +14,10 @@ module Amazon
         assert @ruby_search.total_pages >= 360
       end
 
+      def test_page_should_be_one_for_first_page
+        assert_equal 1, @ruby_search.page
+      end
+
       def test_item_search_response_type
         assert_equal ItemSearchResponse, @ruby_search.class
       end

@@ -8,7 +8,7 @@ module Amazon
       xml_reader :items, [Item], :from => 'Item', :in => 'Items'
       xml_reader :request, Request, :from => 'Request', :in => 'Items'
       xml_reader :total_results, :from => 'TotalResults', :in => 'Items', :as => Integer
-      xml_reader :page, :from => 'ItemPage', :as => Integer
+      xml_reader :page, :from => 'ItemPage', :as => Integer, :else => 1
       xml_reader :total_pages, :from => 'TotalPages', :in => 'Items', :as => Integer
     end
   end
