@@ -35,23 +35,30 @@ module Amazon
       opts
     end
 
+    def self.unpack_cart(opts)
+      opts.merge!(opts.delete(:cart).to_hash) if opts[:cart]
+      opts[:cart_id] ||= opts.delete(:id)
+      opts[:hMAC] ||= opts.delete(:hmac)
+      opts
+    end
+
   public
     # Cart operations build the Item tags from the ASIN
 
     # Creates remote shopping cart containing _asin_
     request :cart_create => :items do |opts|
-      opts = unpack_items(opts)
+      unpack_items(opts)
     end
 
     # Adds item to remote shopping cart
     request :cart_add => :cart do |opts|
       opts = unpack_items(opts)
-      opts.merge(opts.delete(:cart).to_amazon_arg)
+      unpack_cart(opts)
     end
 
     # Adds item to remote shopping cart
     request :cart_get => :cart do |opts|
-      opts.merge(opts.delete(:cart).to_amazon_arg)
+      unpack_cart(opts)
     end
 
     # modifies _cart_item_id_ in remote shopping cart
@@ -59,12 +66,12 @@ module Amazon
     # specify _quantity_ to update cart contents
     request :cart_modify => :cart do |opts|
       opts = unpack_items(opts)
-      opts.merge(opts.delete(:cart).to_amazon_arg)
+      unpack_cart(opts)
     end
 
     # clears contents of remote shopping cart
     request :cart_clear => :cart do |opts|
-      opts.merge(opts.delete(:cart).to_amazon_arg)
+      unpack_cart(opts)
     end
   end
 end

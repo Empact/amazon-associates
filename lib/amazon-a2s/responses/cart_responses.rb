@@ -18,6 +18,7 @@ module Amazon
     end
 
     class CartClearResponse < CartResponse
+      xml_name 'CartClearResponse'
     end
   end
 end
