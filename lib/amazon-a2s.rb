@@ -1,3 +1,6 @@
+module ROXML
+  SILENCE_XML_NAME_WARNING = true
+end
 require 'roxml'
 
 %w(requests/cart requests/browse_node requests/item).each do |file|

@@ -5,7 +5,10 @@ module Amazon
 
     xml_reader :value, :content
     xml_reader :units, :attr => 'Units'
-    xml_construct :value, :units
+
+    def xml_initialize
+      initialize(value, units)
+    end
 
     def initialize(value, units = 'pixels')
       @value = Float(value)
