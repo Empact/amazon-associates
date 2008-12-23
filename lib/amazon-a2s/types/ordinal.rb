@@ -1,23 +1,25 @@
 module Amazon
-  class Ordinal
-    include Comparable
-    include ROXML
+  class A2s
+    class Ordinal
+      include Comparable
+      include ROXML
 
-    xml_reader :value, :content do |val|
-      val.to_i
-    end
+      xml_reader :value, :content do |val|
+        val.to_i
+      end
 
-    def initialize(value)
-      @value = value.to_i
-    end
+      def initialize(value)
+        @value = value.to_i
+      end
 
-    def to_s
-      @value.ordinalize
-    end
-    alias_attribute :inspect, :to_s
+      def to_s
+        @value.ordinalize
+      end
+      alias_attribute :inspect, :to_s
 
-    def ==(other)
-      @value == other
+      def ==(other)
+        @value == other
+      end
     end
   end
 end

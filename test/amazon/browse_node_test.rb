@@ -5,7 +5,7 @@ class Amazon::A2s::BrowseNodeTest < Test::Unit::TestCase
 	  item = Amazon::A2s.item_lookup('B000ROI682', :response_group => 'BrowseNodes').items.first
 	  assert item.browse_nodes.size > 1
     item.browse_nodes.each do |browsenode|
-	    assert_kind_of Amazon::BrowseNode, browsenode
+	    assert_kind_of Amazon::A2s::BrowseNode, browsenode
 	    assert !browsenode.to_s.include?('&amp;'), browsenode.to_s
 	  end
 	end

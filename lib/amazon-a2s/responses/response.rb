@@ -3,6 +3,9 @@ module Amazon
     class Response
       include ROXML
 
+      delegate :current_page, :to => :request
+      xml_reader :request_valid?, :from => 'IsValid', :in => 'Items/Request'
+
       xml_reader :item_errors, [Error], :from => 'Error', :in => "Items/Request/Errors"
       xml_reader :cart_errors, [Error], :from => 'Error', :in => "Cart/Request/Errors"
 

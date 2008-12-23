@@ -1,37 +1,39 @@
 module Amazon
-  class Image
-    include ROXML
+  class A2s
+    class Image
+      include ROXML
 
-    xml_reader :url, :from => 'URL'
-    xml_reader :width, Measurement, :from => 'Width'
-    xml_reader :height, Measurement, :from => 'Height'
+      xml_reader :url, :from => 'URL'
+      xml_reader :width, Measurement, :from => 'Width'
+      xml_reader :height, Measurement, :from => 'Height'
 
-    def initialize(url, width, height)
-      @url = url
-      @width = to_measurement(width)
-      @height = to_measurement(height)
-    end
-
-    def ==(other)
-      return nil unless other.is_a? Image
-      @url == other.url and @width == other.width and @height == other.height
-    end
-
-    def size
-      unless height.units == 'pixels' and width.units == 'pixels'
-        raise 'size not available for images not denominated in pixels'
+      def initialize(url, width, height)
+        @url = url
+        @width = to_measurement(width)
+        @height = to_measurement(height)
       end
 
-      "#{width.value.round}x#{height.value.round}"
-    end
+      def ==(other)
+        return nil unless other.is_a? Image
+        url == other.url and width == other.width and height == other.height
+      end
 
-    def inspect
-      sprintf("#<%s: %s,%sx%s>", self.class.to_s, self.url, self.width, self.height)
-    end
+      def size
+        unless height.units == 'pixels' and width.units == 'pixels'
+          raise 'size not available for images not denominated in pixels'
+        end
 
-  private
-    def to_measurement(arg)
-      arg.is_a?(Measurement) ? arg : Measurement.new(arg, 'pixels')
+        "#{width.value.round}x#{height.value.round}"
+      end
+
+      def inspect
+        "#<#{self.class}: #{url},#{width}x#{height}>"
+      end
+
+    private
+      def to_measurement(arg)
+        arg.is_a?(Measurement) ? arg : Measurement.new(arg, 'pixels')
+      end
     end
   end
 end

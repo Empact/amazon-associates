@@ -5,9 +5,9 @@ module Amazon
   private
     def self.unpack_item(opts, index, item, count = 1)
       case item
-      when Amazon::CartItem
+      when CartItem
         opts[:"Item.#{index}.CartItemId"] = item.cart_item_id
-      when Amazon::Item
+      when Item
         opts["Item.#{index}.ASIN"] = item.asin
       else
         item = item.to_hash.dup

@@ -9,13 +9,13 @@ module Amazon
       end
 
       def test_item_search
-        assert @ruby_search.request.valid?
+        assert @ruby_search.request_valid?
         assert @ruby_search.total_results >= 3600
         assert @ruby_search.total_pages >= 360
       end
 
       def test_page_should_be_one_for_first_page
-        assert_equal 1, @ruby_search.page
+        assert_equal 1, @ruby_search.current_page
       end
 
       def test_item_search_response_type
@@ -28,13 +28,13 @@ module Amazon
 
       def test_item_search_with_paging
         resp = Amazon::A2s.item_search('ruby', :item_page => 2)
-        assert resp.request.valid?
-        assert 2, resp.page
+        assert resp.request_valid?
+        assert 2, resp.current_page
       end
 
       def test_item_search_with_response_group_array
         resp = Amazon::A2s.item_search('ruby', :response_group => %w{Small ItemAttributes Images})
-        assert resp.request.valid?
+        assert resp.request_valid?
       end
 
       def test_item_search_with_invalid_request
@@ -51,12 +51,12 @@ module Amazon
 
       def test_item_search_uk
         resp = Amazon::A2s.item_search('ruby', :country => 'uk')
-        assert resp.request.valid?
+        assert resp.request_valid?
       end
 
       def test_item_search_not_keywords
         resp = Amazon::A2s.item_search(:author => 'rowling')
-        assert resp.request.valid?
+        assert resp.request_valid?
       end
 
       def test_item_search_fake_country_should_throw
@@ -67,7 +67,7 @@ module Amazon
 
       def test_item_search_by_author
         resp = Amazon::A2s.item_search('dave', :type => :author)
-        assert resp.request.valid?
+        assert resp.request_valid?
       end
 
       def test_text_at
@@ -82,7 +82,7 @@ module Amazon
           item.authors
 
         #ordinals
-        assert_equal Amazon::Ordinal.new(2), item.edition
+        assert_equal Amazon::A2s::Ordinal.new(2), item.edition
       end
 
       def test_item_search_should_handle_string_argument_keys_as_well_as_symbols
@@ -93,12 +93,10 @@ module Amazon
         item = Amazon::A2s.item_search('ipod', :search_index => 'All', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images,BrowseNodes').items.first
 
         # Measurements & Image
-        assert_equal(Amazon::Image.new("http://ecx.images-amazon.com/images/I/41qEH4hLTRL._SL75_.jpg",
-                                      Amazon::Measurement.new(56, 'pixels'),
-                                      Amazon::Measurement.new(75, 'pixels')),
+        assert_equal(Amazon::A2s::Image.new("http://ecx.images-amazon.com/images/I/41qEH4hLTRL._SL75_.jpg",
+            Amazon::A2s::Measurement.new(56, 'pixels'),
+            Amazon::A2s::Measurement.new(75, 'pixels')),
           item.small_image)
-
-        assert_equal "56x75", item.small_image.size
 
         # bools
         assert !item.offers.empty?
@@ -106,7 +104,7 @@ module Amazon
         assert_equal false, item.batteries_included?
 
         # price
-        assert_equal Amazon::Price.new('$149.99', 14999, 'USD'), item.list_price
+        assert_equal Amazon::A2s::Price.new('$149.99', 14999, 'USD'), item.list_price
 
         # integers
         assert_instance_of Fixnum, item.total_new_offers
@@ -141,9 +139,9 @@ module Amazon
         item = Amazon::A2s.item_search("0974514055", :response_group => 'Large').items.first
 
         # when <listmanialists> contains a bunch of <listmanialist>s, return an array
-        assert_equal(["R195F9SN6I3YQH", "R14L8RHCLAYQMY", "RCWKKCCVL5FGL", "R2IJ2M3X3ITVAR", "R3MGYO2P65FC8J",
-                      "R2VY37TQWQM0VJ", "R3DB3MYO22PHZ6", "R192F79G3UXHJ5",  "R1L6QNM215M7FB", "RROZA1M8ZJVR2"],
-           item.listmania_lists.map(&:id))
+        assert_equal(["R35BVGTHX7WEKZ",  "R195F9SN6I3YQH",  "R14L8RHCLAYQMY",  "RCWKKCCVL5FGL",  "R2IJ2M3X3ITVAR",
+            "R3MGYO2P65FC8J",  "R2VY37TQWQM0VJ",  "R3DB3MYO22PHZ6",  "R192F79G3UXHJ5",  "R1L6QNM215M7FB"],
+          item.listmania_lists.map(&:id))
 
         review = item.editorial_reviews.first
         # when there's a single child, make sure it's parsed rather than returned as a string
@@ -157,7 +155,7 @@ module Amazon
       def test_item_lookup
         resp = Amazon::A2s.item_lookup('0974514055')
         assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition",
-                     resp.item.attributes['Title']
+          resp.item.attributes['Title']
       end
 
       def test_item_lookup_with_invalid_request
@@ -180,6 +178,138 @@ module Amazon
         assert item.authors.is_a?(Array)
         assert 3, item.authors.size
         assert_equal "Dave Thomas", item.authors.first
+      end
+    end
+
+    class ItemTestBroughtIn < Test::Unit::TestCase
+      def test_should_raise_parameters_repeated_in_request
+        Amazon::A2s.options = {:keywords => 'other keywords'}
+        # FIXME: I think amazon is giving me the wrong error here, because the message
+        #        makes no sense for repeated parameters
+        assert_raise Amazon::A2s::RequiredParameterMissing, 'Your request should have atleast 1 of the following parameters: AWSAccessKeyId, SubscriptionId.' do
+          Item.find(:all, :keywords => 'funny guys')
+        end
+      end
+
+      def test_find_all_should_return_items
+        item = Item.find(:all, :keywords => 'upside').first
+        assert item
+        assert_kind_of Item, item
+      end
+
+      def test_find_all_and_find_first_should_yield_same_first
+        params = {:keywords => 'jelly'}
+        assert_equal Item.find(:all, params).first, Item.find(:first, params)
+      end
+
+      def test_find_second_page_returns_different_items_than_first
+        params = {:keywords => 'potter'}
+        assert_not_equal Item.find(:first, params.merge(:page => 1)),
+          Item.find(:first, params.merge(:page => 2))
+      end
+
+      def test_item_creator_should_be_unpacked
+        asin = '0545010225'
+        item = Item.find(asin)
+        assert_equal("Mary GrandPré",
+          Amazon::A2s.item_lookup(asin).items.first.attributes["Creator"])
+        flunk # check illustrator role
+      end
+
+      def test_item_list_price_present
+        assert Item.find('0545010225').list_price
+      end
+
+      def test_item_performers_unpacked_to_array
+        assert_equal(["Jeff Bridges", "Jr. Robert Downey", "Clark Gregg",
+                      "Terrence Howard", "Gwyneth Paltrow"],
+          Item.find('B00005JPS8').attributes['Actor'])
+      end
+
+      def test_image_sets_should_be_unpacked
+        item = Item.find(:first, :keywords => 'potter')
+        assert !item.image_sets.empty?
+      end
+
+      def test_missing_item_should_throw
+        assert_raise Amazon::A2s::InvalidParameterValue do
+          Item.find('abc')
+        end
+      end
+
+      def test_find_no_page_returns_same_items_as_first
+        params = {:keywords => 'potter'}
+        assert_equal Item.find(:first, params),
+          Item.find(:first, params.merge(:page => 1))
+      end
+
+      def test_find_with_different_sort_returns_different
+        params = {:keywords => 'potter'}
+        assert_not_equal Item.find(:first, params.merge(:sort => Amazon::A2s.sort_types['Books'][3])),
+          Item.find(:first, params.merge(:sort => Amazon::A2s.sort_types['Books'][7]))
+        assert_equal Item.find(:first, params.merge(:sort => Amazon::A2s.sort_types['Books'][3])),
+          Item.find(:first, params.merge(:sort => Amazon::A2s.sort_types['Books'][3]))
+      end
+
+      def test_find_too_far_a_page_is_error
+        assert_raise Amazon::A2s::ParameterOutOfRange do
+          Item.find(:first, :keywords => 'potter', :page => 9999)
+        end
+      end
+
+      def test_none_found_is_error
+        assert_raise Amazon::A2s::ItemNotFound do
+          Item.find(:first, :keywords => 'zjvalk', :page => 400)
+        end
+      end
+
+      def test_pagination_basics
+        results = Item.find(:all, :keywords => 'potter', :search_index => 'All')
+        assert_equal 4000, results.total_entries
+        assert_equal 1, results.current_page
+      end
+
+      def test_pagination_sets_current_page
+        [3, 7].each do |page|
+          assert_equal page, Item.find(:all, :keywords => 'potter', :page => page).current_page
+        end
+      end
+
+      def test_should_reject_unknown_args
+        assert_raise ArgumentError do
+          Item.find(:first, :keywords => 'potter', :itempage => 12)
+        end
+      end
+
+      def test_find_should_work_for_blended_merchants_and_all
+        assert Item.find(:first, :keywords => 'blackberry', :search_index => 'Blended')
+        assert Item.find(:first, :keywords => 'blackberry', :search_index => 'All')
+        assert Item.find(:first, :keywords => 'blackberry', :search_index => 'Merchants')
+      end
+
+      def test_find_top_sellers_should_return_items
+        assert !Item.find(:top_sellers, :browse_node_id => 520432).empty?
+      end
+
+      def test_should_find_one
+        item_asin = '0545010225'
+        item = Item.find(item_asin)
+        assert item
+        assert item.is_a?(Item)
+        assert_equal item_asin, item.asin
+      end
+
+      def test_find_one_and_first_should_be_equivalent
+        # TODO: or maybe a subset?
+        item1 = Item.find(:first, :keywords => 'potter')
+        item2 = Item.find(item1.asin)
+        assert_equal item1, item2
+      end
+
+      def test_should_raise_on_bad_request
+        assert_raise ArgumentError do
+          Item.find(20)
+        end
       end
     end
   end
