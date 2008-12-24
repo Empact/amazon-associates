@@ -1,11 +1,11 @@
 require File.join(File.dirname(__FILE__), '../test_helper')
 
 module Amazon
-  class A2s
+  module Associates
     class ItemTest < Test::Unit::TestCase
       ## Test item_search
       def setup
-        @ruby_search = Amazon::A2s.item_search('ruby')
+        @ruby_search = Amazon::Associates.item_search('ruby')
       end
 
       def test_item_search
@@ -27,51 +27,51 @@ module Amazon
       end
 
       def test_item_search_with_paging
-        resp = Amazon::A2s.item_search('ruby', :item_page => 2)
+        resp = Amazon::Associates.item_search('ruby', :item_page => 2)
         assert resp.request_valid?
         assert 2, resp.current_page
       end
 
       def test_item_search_with_response_group_array
-        resp = Amazon::A2s.item_search('ruby', :response_group => %w{Small ItemAttributes Images})
+        resp = Amazon::Associates.item_search('ruby', :response_group => %w{Small ItemAttributes Images})
         assert resp.request_valid?
       end
 
       def test_item_search_with_invalid_request
-        assert_raise Amazon::A2s::RequiredParameterMissing do
-          Amazon::A2s.item_search(nil)
+        assert_raise Amazon::Associates::RequiredParameterMissing do
+          Amazon::Associates.item_search(nil)
         end
       end
 
       def test_item_search_with_no_result
-        assert_raise Amazon::A2s::ItemNotFound, ' We did not find any matches for your request.' do
-          Amazon::A2s.item_search('afdsafds')
+        assert_raise Amazon::Associates::ItemNotFound, ' We did not find any matches for your request.' do
+          Amazon::Associates.item_search('afdsafds')
         end
       end
 
       def test_item_search_uk
-        resp = Amazon::A2s.item_search('ruby', :country => 'uk')
+        resp = Amazon::Associates.item_search('ruby', :country => 'uk')
         assert resp.request_valid?
       end
 
       def test_item_search_not_keywords
-        resp = Amazon::A2s.item_search(:author => 'rowling')
+        resp = Amazon::Associates.item_search(:author => 'rowling')
         assert resp.request_valid?
       end
 
       def test_item_search_fake_country_should_throw
-        assert_raise Amazon::A2s::RequestError do
-          Amazon::A2s.item_search('ruby', :country => :asfdkjjk)
+        assert_raise Amazon::Associates::RequestError do
+          Amazon::Associates.item_search('ruby', :country => :asfdkjjk)
         end
       end
 
       def test_item_search_by_author
-        resp = Amazon::A2s.item_search('dave', :type => :author)
+        resp = Amazon::Associates.item_search('dave', :type => :author)
         assert resp.request_valid?
       end
 
       def test_text_at
-        item = Amazon::A2s.item_search("0974514055", :response_group => 'Large').items.first
+        item = Amazon::Associates.item_search("0974514055", :response_group => 'Large').items.first
 
         # one item
         assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition",
@@ -82,20 +82,20 @@ module Amazon
           item.authors
 
         #ordinals
-        assert_equal Amazon::A2s::Ordinal.new(2), item.edition
+        assert_equal Amazon::Associates::Ordinal.new(2), item.edition
       end
 
       def test_item_search_should_handle_string_argument_keys_as_well_as_symbols
-        Amazon::A2s.item_search('potter', 'search_index' => 'Books')
+        Amazon::Associates.item_search('potter', 'search_index' => 'Books')
       end
 
       def test_hash_at_handles_specific_types
-        item = Amazon::A2s.item_search('ipod', :search_index => 'All', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images,BrowseNodes').items.first
+        item = Amazon::Associates.item_search('ipod', :search_index => 'All', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images,BrowseNodes').items.first
 
         # Measurements & Image
-        assert_equal(Amazon::A2s::Image.new("http://ecx.images-amazon.com/images/I/41qEH4hLTRL._SL75_.jpg",
-            Amazon::A2s::Measurement.new(56, 'pixels'),
-            Amazon::A2s::Measurement.new(75, 'pixels')),
+        assert_equal(Amazon::Associates::Image.new("http://ecx.images-amazon.com/images/I/41qEH4hLTRL._SL75_.jpg",
+            Amazon::Associates::Measurement.new(56, 'pixels'),
+            Amazon::Associates::Measurement.new(75, 'pixels')),
           item.small_image)
 
         # bools
@@ -104,7 +104,7 @@ module Amazon
         assert_equal false, item.batteries_included?
 
         # price
-        assert_equal Amazon::A2s::Price.new('$149.99', 14999, 'USD'), item.list_price
+        assert_equal Amazon::Associates::Price.new('$149.99', 14999, 'USD'), item.list_price
 
         # integers
         assert_instance_of Fixnum, item.total_new_offers
@@ -112,7 +112,7 @@ module Amazon
 
         # attributes
         assert_equal "primary", item.image_sets.first.category
-        assert_equal "Mary GrandPré", Amazon::A2s.item_lookup('0545010225').item.creators['Illustrator']
+        assert_equal "Mary GrandPré", Amazon::Associates.item_lookup('0545010225').item.creators['Illustrator']
 
         # browsenodes
         nodes = item.browse_nodes.detect {|n| n.name == 'MP3 Players' }
@@ -126,17 +126,17 @@ module Amazon
       end
 
       def test_price_should_handle_Price_Too_Low_To_Display
-        assert_equal 'Too low to display', Amazon::A2s.item_lookup('B000W79GQA', :response_group => 'Offers').item.lowest_new_price.to_s
+        assert_equal 'Too low to display', Amazon::Associates.item_lookup('B000W79GQA', :response_group => 'Offers').item.lowest_new_price.to_s
       end
 
       def test_hash_at_handles_string_editions
-        Amazon::A2s.item_search("potter", :item_page => 3, :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.each do |item|
+        Amazon::Associates.item_search("potter", :item_page => 3, :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images').items.each do |item|
           assert item
         end
       end
 
       def test_hash_at_makes_arrays_from_lists
-        item = Amazon::A2s.item_search("0974514055", :response_group => 'Large').items.first
+        item = Amazon::Associates.item_search("0974514055", :response_group => 'Large').items.first
 
         # when <listmanialists> contains a bunch of <listmanialist>s, return an array
         assert_equal(["R35BVGTHX7WEKZ",  "R195F9SN6I3YQH",  "R14L8RHCLAYQMY",  "RCWKKCCVL5FGL",  "R2IJ2M3X3ITVAR",
@@ -153,26 +153,26 @@ module Amazon
 
       ## Test item_lookup
       def test_item_lookup
-        resp = Amazon::A2s.item_lookup('0974514055')
+        resp = Amazon::Associates.item_lookup('0974514055')
         assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition",
           resp.item.attributes['Title']
       end
 
       def test_item_lookup_with_invalid_request
-        assert_raise Amazon::A2s::RequiredParameterMissing, 'Your request is missing required parameters. Required parameters include ItemId.' do
-          Amazon::A2s.item_lookup(nil)
+        assert_raise Amazon::Associates::RequiredParameterMissing, 'Your request is missing required parameters. Required parameters include ItemId.' do
+          Amazon::Associates.item_lookup(nil)
         end
       end
 
       def test_item_lookup_with_no_result
-        assert_raise Amazon::A2s::InvalidParameterValue, 'ABC is not a valid value for ItemId. Please change this value and retry your request.' do
-          resp = Amazon::A2s.item_lookup('abc')
+        assert_raise Amazon::Associates::InvalidParameterValue, 'ABC is not a valid value for ItemId. Please change this value and retry your request.' do
+          resp = Amazon::Associates.item_lookup('abc')
           raise resp.inspect
         end
       end
 
       def test_hpricot_extensions
-        item = Amazon::A2s.item_lookup('0974514055').item
+        item = Amazon::Associates.item_lookup('0974514055').item
 
         assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition", item.attributes['Title']
         assert item.authors.is_a?(Array)
@@ -183,10 +183,10 @@ module Amazon
 
     class ItemTestBroughtIn < Test::Unit::TestCase
       def test_should_raise_parameters_repeated_in_request
-        Amazon::A2s.options = {:keywords => 'other keywords'}
+        Amazon::Associates.options = {:keywords => 'other keywords'}
         # FIXME: I think amazon is giving me the wrong error here, because the message
         #        makes no sense for repeated parameters
-        assert_raise Amazon::A2s::RequiredParameterMissing, 'Your request should have atleast 1 of the following parameters: AWSAccessKeyId, SubscriptionId.' do
+        assert_raise Amazon::Associates::RequiredParameterMissing, 'Your request should have atleast 1 of the following parameters: AWSAccessKeyId, SubscriptionId.' do
           Item.find(:all, :keywords => 'funny guys')
         end
       end
@@ -212,7 +212,7 @@ module Amazon
         asin = '0545010225'
         item = Item.find(asin)
         assert_equal("Mary GrandPré",
-          Amazon::A2s.item_lookup(asin).items.first.attributes["Creator"])
+          Amazon::Associates.item_lookup(asin).items.first.attributes["Creator"])
         flunk # check illustrator role
       end
 
@@ -232,7 +232,7 @@ module Amazon
       end
 
       def test_missing_item_should_throw
-        assert_raise Amazon::A2s::InvalidParameterValue do
+        assert_raise Amazon::Associates::InvalidParameterValue do
           Item.find('abc')
         end
       end
@@ -245,20 +245,20 @@ module Amazon
 
       def test_find_with_different_sort_returns_different
         params = {:keywords => 'potter'}
-        assert_not_equal Item.find(:first, params.merge(:sort => Amazon::A2s.sort_types['Books'][3])),
-          Item.find(:first, params.merge(:sort => Amazon::A2s.sort_types['Books'][7]))
-        assert_equal Item.find(:first, params.merge(:sort => Amazon::A2s.sort_types['Books'][3])),
-          Item.find(:first, params.merge(:sort => Amazon::A2s.sort_types['Books'][3]))
+        assert_not_equal Item.find(:first, params.merge(:sort => Amazon::Associates.sort_types['Books'][3])),
+          Item.find(:first, params.merge(:sort => Amazon::Associates.sort_types['Books'][7]))
+        assert_equal Item.find(:first, params.merge(:sort => Amazon::Associates.sort_types['Books'][3])),
+          Item.find(:first, params.merge(:sort => Amazon::Associates.sort_types['Books'][3]))
       end
 
       def test_find_too_far_a_page_is_error
-        assert_raise Amazon::A2s::ParameterOutOfRange do
+        assert_raise Amazon::Associates::ParameterOutOfRange do
           Item.find(:first, :keywords => 'potter', :page => 9999)
         end
       end
 
       def test_none_found_is_error
-        assert_raise Amazon::A2s::ItemNotFound do
+        assert_raise Amazon::Associates::ItemNotFound do
           Item.find(:first, :keywords => 'zjvalk', :page => 400)
         end
       end

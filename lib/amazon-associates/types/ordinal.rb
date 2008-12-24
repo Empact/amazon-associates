@@ -1,5 +1,5 @@
 module Amazon
-  class A2s
+  module Associates
     class Ordinal
       include Comparable
       include ROXML

@@ -1,1 +1,1 @@
-require 'amazon-a2s'
+require 'amazon-associates'

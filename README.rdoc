@@ -1,4 +1,4 @@
-== amazon-a2s
+== amazon-associates
 
 Generic Amazon E-commerce REST API using Hpricot with configurable 
 default options and method call options. Uses Response and 
@@ -16,11 +16,11 @@ Version: 0.6
 
 == INSTALLATION
 
-  $ gem install amazon-a2s
+  $ gem install amazon-associates
 
 == EXAMPLE
 
-    require 'amazon/a2s'
+    require 'amazon-associates'
 	
     # set the default options; options will be camelized and converted to REST request parameters.
     Amazon::Ecs.options = {:aWS_access_key_id => [your developer token]}

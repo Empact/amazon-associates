@@ -1,7 +1,7 @@
 require 'roxml'
 
 module Amazon
-  class A2s
+  module Associates
     class Cart
       include ROXML
 
@@ -24,17 +24,17 @@ module Amazon
           all[item] = count || 1
           all
         end
-        Amazon::A2s.cart_create(items, args).cart
+        Amazon::Associates.cart_create(items, args).cart
       end
 
       #  CartGet
       def self.get(args)
-        Amazon::A2s.cart_get(args).cart
+        Amazon::Associates.cart_get(args).cart
       end
 
       def save
         @changes.each do |action, *args|
-          cart = Amazon::A2s.send(action, *args).cart
+          cart = Amazon::Associates.send(action, *args).cart
           @items = cart.items
           @id = cart.id
           @hmac = cart.hmac

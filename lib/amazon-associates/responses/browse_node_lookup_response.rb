@@ -1,5 +1,5 @@
 module Amazon
-  class A2s
+  module Associates
     class BrowseNodeLookupResponse < Response
       xml_name 'BrowseNodeLookupResponse'
       xml_reader :browse_nodes, [BrowseNode], :from => 'BrowseNode', :in => 'BrowseNodes'

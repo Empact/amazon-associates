@@ -1,5 +1,5 @@
 module Amazon
-  class A2s
+  module Associates
     class Measurement
       include ROXML
       include Comparable

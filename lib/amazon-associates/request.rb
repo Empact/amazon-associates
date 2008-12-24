@@ -7,7 +7,7 @@ end
 require 'net/http'
 
 module Amazon
-  class A2s
+  module Associates
     def self.request(actions, &block)
       actions.each_pair do |action, main_arg|
         meta_def(action) do |*args|

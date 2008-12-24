@@ -1,7 +1,7 @@
 require 'will_paginate/collection'
 
 module Amazon
-  class A2s
+  module Associates
     class Item
       include ROXML
 
@@ -73,20 +73,20 @@ module Amazon
       def self.top_sellers(opts)
         opts.merge!(:response_group => 'TopSellers')
         opts[:browse_node_id] = opts.delete(:browse_node).id if opts[:browse_node]
-        items = Amazon::A2s.browse_node_lookup(opts).top_sellers.map {|i| i.text_at('asin') }
-        Amazon::A2s.item_lookup(:item_id => items * ',', :response_group => SMALL_RESPONSE_GROUPS).items
+        items = Amazon::Associates.browse_node_lookup(opts).top_sellers.map {|i| i.text_at('asin') }
+        Amazon::Associates.item_lookup(:item_id => items * ',', :response_group => SMALL_RESPONSE_GROUPS).items
       end
 
       def self.similar(opts)
         opts.reverse_merge!(:response_group => SMALL_RESPONSE_GROUPS)
-        Amazon::A2s.similarity_lookup(opts.delete(:item_id), opts).items
+        Amazon::Associates.similarity_lookup(opts.delete(:item_id), opts).items
       end
 
       def self.top_sellers(opts)
         opts.merge!(:response_group => 'TopSellers')
         opts[:browse_node_id] = opts.delete(:browse_node).id if opts[:browse_node]
-        items = Amazon::A2s.browse_node_lookup(opts).browse_nodes.map(&:top_sellers).flatten.map(&:asin)
-        Amazon::A2s.item_lookup(:item_id => items * ',', :response_group => SMALL_RESPONSE_GROUPS).items
+        items = Amazon::Associates.browse_node_lookup(opts).browse_nodes.map(&:top_sellers).flatten.map(&:asin)
+        Amazon::Associates.item_lookup(:item_id => items * ',', :response_group => SMALL_RESPONSE_GROUPS).items
       end
 
       def self.first(opts)
@@ -103,7 +103,7 @@ module Amazon
         opts[:item_page]    ||= (opts.delete(:page) || 1)
         prep_responses(opts)
 
-        response = Amazon::A2s.item_search(opts)
+        response = Amazon::Associates.item_search(opts)
 
         # TODO: Max count is different for different indexes, for example, All only returns 5 pages
         max_count = [response.total_results, MAX_COUNT].min
@@ -116,7 +116,7 @@ module Amazon
 
       def self.one(opts)
         prep_responses(opts)
-        Amazon::A2s.item_lookup(opts.delete(:item_id), opts).items.first
+        Amazon::Associates.item_lookup(opts.delete(:item_id), opts).items.first
       end
 
     private

@@ -1,7 +1,7 @@
 require File.join(File.dirname(__FILE__), '../request')
 
 module Amazon
-  class A2s
+  module Associates
   private
     def self.unpack_item(opts, index, item, count = 1)
       case item

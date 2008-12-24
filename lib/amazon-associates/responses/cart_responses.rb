@@ -1,5 +1,5 @@
 module Amazon
-  class A2s
+  module Associates
     class CartResponse < Response
       xml_reader :cart, Cart, :from => 'Cart', :required => true
     end
