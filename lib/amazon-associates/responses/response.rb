@@ -22,18 +22,20 @@ module Amazon
         raise errors.first unless errors.empty?
       end
 
+      def ==(other)
+        instance_variables == other.instance_variables && instance_variables.all? do |v|
+          instance_variable_get(v) == other.instance_variable_get(v)
+        end
+      end
+
     private
       def process_errors(vals)
-        if vals.blank?
-          []
-        else
-          vals.collect do |error|
-            if error.code && !IGNORE_ERRORS.include?(error.code)
-              if exception = ERROR[error.code]
-                exception.new("#{error.message} (#{@url})")
-              else
-                RuntimeError.new("#{error.code}: #{error.message} (#{@url})")
-              end
+        vals.collect do |error|
+          if error.code && !IGNORE_ERRORS.include?(error.code)
+            if exception = ERROR[error.code]
+              exception.new("#{error.message} (#{@url})")
+            else
+              RuntimeError.new("#{error.code}: #{error.message} (#{@url})")
             end
           end
         end

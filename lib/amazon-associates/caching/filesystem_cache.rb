@@ -37,8 +37,6 @@ module Amazon
           file_path = File.join(path, cached_filename[0..2], cached_filename)
           if FileTest.exists?(file_path)
             open(file_path) {|f| Marshal.load(f) }
-          else
-            nil
           end
         end
 
