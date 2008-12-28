@@ -1,6 +1,12 @@
 require "fileutils"
 require "find"
 
+begin
+  require 'md5'
+rescue LoadError
+  require 'digest/md5'
+end
+
 module Amazon
   module Associates
     module FilesystemCache
@@ -12,16 +18,17 @@ module Amazon
         #frequency of sweeping in hours
         DEFAULT_SWEEP_FREQUENCY = 2
 
-        def self.cache(request, response)
+        def self.cache(request_url, response)
           path = self.cache_path
-          cached_filename = Digest::SHA1.hexdigest(response.url)
-          cached_folder = cached_filename[0..2]
+          cached_filename = Digest::SHA1.hexdigest(request_url)
+          cached_folder = File.join(path, cached_filename[0..2])
 
-          FileUtils.mkdir_p(File.join(path, cached_folder, cached_folder))
+          FileUtils.mkdir_p(cached_folder)
 
-          cached_file = File.open(File.join(path, cached_folder, cached_filename), "w")
-          cached_file.puts response.doc.to_s
-          cached_file.close
+          destination = File.join(cached_folder, cached_filename)
+          open(destination, "w") do |cached_file|
+            Marshal.dump(response, cached_file)
+          end
         end
 
         def self.get(request)
@@ -29,7 +36,7 @@ module Amazon
           cached_filename = Digest::SHA1.hexdigest(request)
           file_path = File.join(path, cached_filename[0..2], cached_filename)
           if FileTest.exists?(file_path)
-            File.read(file_path).chomp
+            open(file_path) {|f| Marshal.load(f) }
           else
             nil
           end
@@ -81,9 +88,9 @@ module Amazon
           FileUtils.rm_rf(self.timestamp_filename)
 
           #create a new one its place
-          timestamp = File.open(self.timestamp_filename, "w")
-          timestamp.puts(Time.now)
-          timestamp.close
+          File.open(self.timestamp_filename, "w") do |timestamp|
+            timestamp.puts(Time.now)
+          end
         end
 
         def self.must_sweep?

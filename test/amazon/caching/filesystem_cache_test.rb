@@ -82,7 +82,9 @@ class Amazon::Associates::FilesystemCacheTest < Test::Unit::TestCase
     end
     
     should "create a file in the cache path with the response inside it" do
-      assert_equal @resp, File.read(File.join(@@cache_path + @filename[0..2], @filename)).chomp
+      open(File.join(@@cache_path + @filename[0..2], @filename)) do |f|
+        assert_equal @resp, Marshal.load(f)
+      end
     end
   end
   

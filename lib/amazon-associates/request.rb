@@ -42,7 +42,8 @@ module Amazon
         unless response.kind_of? Net::HTTPSuccess
           raise AmazonAssociate::RequestError, "HTTP Response: #{res.code} #{res.message}"
         end
-        response = eval(ROXML::XML::Parser.parse(response.body).root.name).from_xml(response.body, request_url)
+        type = eval(ROXML::XML::Parser.parse(response.body).root.name)
+        response = type.from_xml(response.body, request_url)
         cache_response(request_url, response) if caching_enabled?
       end
 
