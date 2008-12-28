@@ -44,7 +44,7 @@ module Amazon
       end
 
       def inspect
-        "#<#{self.class}: #{asin} \"#{title}\" #{manufacturer}>"
+        "#<#{self.class}: #{asin} #{attributes.inspect}>"
       end
 
       PER_PAGE = 10

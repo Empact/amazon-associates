@@ -2,21 +2,13 @@ require 'rake'
 require 'rake/testtask'
 require 'pathname'
 
+desc "Run unit tests."
+task :default => :test
+
+desc "Test the amazon_associate library."
 Rake::TestTask.new(:test) do |t|
-  t.pattern = 'test/**/*_test.rb'
+  t.libs << "test"
+  t.test_files = FileList["test/**/*test.rb"]
   t.verbose = true
-end
-
-namespace :test do
-  # tasks to test each subsystem
-  def test_types
-    Pathname.new("test/amazon").children.map {|c| /(.+)\_test\.rb/.match(c.basename.to_s)[1] }
-  end
-
-  test_types.each do |type|
-    Rake::TestTask.new(type.to_sym) do |t|
-      t.pattern = "test/**/#{type}_test.rb"
-      t.verbose = true
-    end
-  end
+  t.warning = true
 end

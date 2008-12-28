@@ -3,6 +3,7 @@ module Amazon
     class Response
       include ROXML
 
+      attr_reader :url
       delegate :current_page, :to => :request
       xml_reader :request_valid?, :from => 'IsValid', :in => 'Items/Request'
 

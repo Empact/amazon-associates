@@ -27,13 +27,26 @@ module Amazon
       opts.to_options!
       opts.reverse_merge! options
       request_url = prepare_url(opts)
-      log "Request URL: #{request_url}"
+      response = nil
 
-      res = Net::HTTP.get_response(URI::parse(request_url))
-      unless res.kind_of? Net::HTTPSuccess
-        raise Amazon::RequestError, "HTTP Response: #{res.code} #{res.message}"
+      if caching_enabled?
+        FilesystemCache.sweep
+
+        response = FilesystemCache.get(request_url)
       end
-      eval(ROXML::XML::Parser.parse(res.body).root.name).from_xml(res.body, request_url)
+
+      if response.nil?
+        log "Request URL: #{request_url}"
+
+        response = Net::HTTP.get_response(URI::parse(request_url))
+        unless response.kind_of? Net::HTTPSuccess
+          raise AmazonAssociate::RequestError, "HTTP Response: #{res.code} #{res.message}"
+        end
+        response = eval(ROXML::XML::Parser.parse(response.body).root.name).from_xml(response.body, request_url)
+        cache_response(request_url, response) if caching_enabled?
+      end
+
+      response
     end
 
     BASE_ARGS = [:aWS_access_key_id, :operation, :associate_tag, :response_group]
@@ -65,17 +78,17 @@ module Amazon
     }
 
     def self.valid_arguments(operation)
-      BASE_ARGS + VALID_ARGS.fetch(operation, OTHER_ARGS)
+      BASE_ARGS + FilesystemCache::OPTIONS + VALID_ARGS.fetch(operation, OTHER_ARGS)
     end
 
-    TLDS = {
+    TLDS = HashWithIndifferentAccess.new(
         'us' => 'com',
         'uk' => 'co.uk',
         'ca' => 'ca',
         'de' => 'de',
         'jp' => 'co.jp',
         'fr' => 'fr'
-    }
+    )
     def self.request_url(country)
       tld = TLDS.fetch(country || 'us') do
         raise RequestError, "Invalid country '#{country}'"
@@ -92,6 +105,14 @@ module Amazon
         v *= ',' if v.is_a? Array
         [k.to_s.camelize, v]
       end.to_query
+    end
+
+    def self.caching_enabled?
+      !self.options[:caching_strategy].blank?
+    end
+
+    def self.cache_response(request, response)
+      FilesystemCache.cache(request, response)
     end
   end
 end

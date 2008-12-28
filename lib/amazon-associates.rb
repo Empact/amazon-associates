@@ -3,20 +3,35 @@ module ROXML
 end
 require 'roxml'
 
-%w(requests/cart requests/browse_node requests/item).each do |file|
+%w(caching/filesystem_cache requests/cart requests/browse_node requests/item).each do |file|
   require File.join(File.dirname(__FILE__), 'amazon-associates', file)
 end
 
 module Amazon
   module Associates
+    # Only we throw this
+    class ConfigurationError < RuntimeError; end
+
     # Default search options
     @options = {}
     @debug = false
 
-    # see http://railstips.org/2006/11/18/class-and-instance-variables-in-ruby
     class << self;
       attr_accessor :debug
       attr_writer :options
+
+      def configure(&proc)
+        raise ArgumentError, "Block is required." unless block_given?
+        yield @options
+        case options[:caching_strategy]
+        when :filesystem
+          FilesystemCache.initialize_options(options)
+        when nil
+          nil
+        else
+          raise ConfigurationError, "Unrecognized caching_strategy"
+        end
+      end
 
       def options
         if access_key = @options.delete(:aws_access_key_id)
