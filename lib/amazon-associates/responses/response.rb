@@ -23,7 +23,7 @@ module Amazon
       end
 
       def ==(other)
-        instance_variables == other.instance_variables && instance_variables.all? do |v|
+        (instance_variables.sort == other.instance_variables.sort) && instance_variables.all? do |v|
           instance_variable_get(v) == other.instance_variable_get(v)
         end
       end
