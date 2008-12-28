@@ -110,6 +110,13 @@ class Amazon::Associates::FilesystemCacheTest < Test::Unit::TestCase
       do_request
       assert_equal(original, @resp)
     end
+
+    should "not include cache parameters in the response" do
+      assert_no_match(/CachingOptions/, @resp.url)
+      assert_no_match(/caching_options/, @resp.url)
+      assert_no_match(/cache_path/, @resp.url)
+      assert_no_match(/disk_quota/, @resp.url)
+    end
   end
   
   context "sweeping cached requests" do

@@ -25,7 +25,7 @@ module Amazon
     # Generic send request to ECS REST service. You have to specify the :operation parameter.
     def self.send_request(opts)
       opts.to_options!
-      opts.reverse_merge! options
+      opts.reverse_merge! options.except(:caching_options, :caching_strategy)
       request_url = prepare_url(opts)
       response = nil
 
@@ -79,7 +79,7 @@ module Amazon
     }
 
     def self.valid_arguments(operation)
-      BASE_ARGS + FilesystemCache::OPTIONS + VALID_ARGS.fetch(operation, OTHER_ARGS)
+      BASE_ARGS + VALID_ARGS.fetch(operation, OTHER_ARGS)
     end
 
     TLDS = HashWithIndifferentAccess.new(

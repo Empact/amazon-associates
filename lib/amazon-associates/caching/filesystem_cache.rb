@@ -10,8 +10,6 @@ end
 module Amazon
   module Associates
     module FilesystemCache
-        OPTIONS = [:caching_options, :caching_strategy]
-
         #disk quota in megabytes
         DEFAULT_DISK_QUOTA = 200
 
