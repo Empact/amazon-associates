@@ -51,8 +51,12 @@ module Amazon
 
           @@cache_path = cache_options[:cache_path]
 
-          if @@cache_path.nil? || !File.directory?(@@cache_path)
+          if @@cache_path.nil?
             raise ConfigurationError, "You must specify a cache path for filesystem caching"
+          end
+
+          if !File.directory?(@@cache_path)
+            raise ConfigurationError, "You must specify a valid cache path for filesystem caching"
           end
         end
 

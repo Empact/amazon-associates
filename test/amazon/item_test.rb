@@ -1,10 +1,15 @@
 require File.join(File.dirname(__FILE__), '../test_helper')
 
+ITEM_CACHE_PATH = File.join(File.dirname(__FILE__), "../utilities/item_cache")
+
 module Amazon
   module Associates
     class ItemTest < Test::Unit::TestCase
+      include FilesystemTestHelper
+      
       ## Test item_search
       def setup
+        get_valid_caching_options(ITEM_CACHE_PATH)
         @ruby_search = Amazon::Associates.item_search('ruby')
       end
 
@@ -182,7 +187,10 @@ module Amazon
     end
 
     class Amazon::Associates::ItemTestsBroughtInFromAssociateGem < Test::Unit::TestCase
+      include FilesystemTestHelper
+      
       def setup
+        get_valid_caching_options(ITEM_CACHE_PATH)
         Amazon::Associates.options.merge!(:response_group => "Large")
       end
 
@@ -273,6 +281,12 @@ module Amazon
     end
 
     class ItemTestBroughtIn < Test::Unit::TestCase
+      include FilesystemTestHelper
+      
+      def setup
+        get_valid_caching_options(ITEM_CACHE_PATH)
+      end
+
       def test_find_all_should_return_items
         item = Item.find(:all, :keywords => 'upside').first
         assert item

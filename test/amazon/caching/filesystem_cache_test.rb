@@ -74,15 +74,15 @@ class Amazon::Associates::FilesystemCacheTest < Test::Unit::TestCase
     end
     
     should "create a folder in the cache path with the first three letters of the digested filename" do
-      assert FileTest.exists?(File.join(@@cache_path, @filename[0..2]))
+      assert FileTest.exists?(File.join(CACHE_PATH, @filename[0..2]))
     end
     
     should "create a file in the cache path with a digested version of the url " do
-      assert FileTest.exists?(File.join(@@cache_path, @filename[0..2], @filename))
+      assert FileTest.exists?(File.join(CACHE_PATH, @filename[0..2], @filename))
     end
     
     should "create a file in the cache path with the response inside it" do
-      open(File.join(@@cache_path + @filename[0..2], @filename)) do |f|
+      open(File.join(CACHE_PATH + @filename[0..2], @filename)) do |f|
         assert_equal @resp, Marshal.load(f)
       end
     end
@@ -161,12 +161,12 @@ class Amazon::Associates::FilesystemCacheTest < Test::Unit::TestCase
       Amazon::Associates::FilesystemCache.expects(:sweep_time_expired?).once.returns(true)
       
       do_request
-      assert FileTest.exists?(File.join(@@cache_path, ".amz_timestamp"))
+      assert FileTest.exists?(File.join(CACHE_PATH, ".amz_timestamp"))
     end
     
     should "purge the cache when performing a sweep" do
       (0..9).each do |n| 
-        test = File.open(File.join(@@cache_path, "test_file_#{n}"), "w")
+        test = File.open(File.join(CACHE_PATH, "test_file_#{n}"), "w")
         test.puts Time.now
         test.close
       end
@@ -175,7 +175,7 @@ class Amazon::Associates::FilesystemCacheTest < Test::Unit::TestCase
       do_request
       
       (0..9).each do |n|
-        assert !FileTest.exists?(File.join(@@cache_path, "test_file_#{n}"))
+        assert !FileTest.exists?(File.join(CACHE_PATH, "test_file_#{n}"))
       end
     end
     

@@ -19,7 +19,7 @@ module Amazon
           assert_nothing_raised do
             Amazon::Associates.configure do |options|
               options[:caching_strategy] = :filesystem
-              options[:caching_options] = VALID_CACHING_OPTIONS
+              options[:caching_options] = valid_caching_options
             end
           end
           raise Amazon::Associates.options.inspect unless Amazon::Associates.caching_enabled?
