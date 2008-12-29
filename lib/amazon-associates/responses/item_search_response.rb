@@ -9,7 +9,6 @@ module Amazon
       xml_reader :total_results, :from => 'TotalResults', :in => 'Items', :as => Integer
       xml_reader :total_pages, :from => 'TotalPages', :in => 'Items', :as => Integer
       xml_reader :request, ItemSearchRequest, :from => 'Request', :in => 'Items'
-      xml_reader :errors, [Error], :from => 'Error', :in => "Items/Request/Errors"
     end
   end
 end

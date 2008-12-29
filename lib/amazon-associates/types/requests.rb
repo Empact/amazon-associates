@@ -4,6 +4,17 @@ module Amazon
       include ROXML
 
       xml_reader :valid?, :from => 'IsValid'
+      xml_reader :errors, [Error], :from => 'Error' do |errors|
+        errors.collect do |error|
+          if error.code && !IGNORE_ERRORS.include?(error.code)
+            if exception = ERROR[error.code]
+              exception.new("#{error.message} (#{@url})")
+            else
+              RuntimeError.new("#{error.code}: #{error.message} (#{@url})")
+            end
+          end
+        end
+      end
     end
 
     class ItemSearchRequest < Request

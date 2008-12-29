@@ -5,6 +5,7 @@ module Amazon
       xml_reader :items, [Item], :from => 'Item', :in => 'Items'
       xml_reader :current_page, :from => 'ItemPage', :as => Integer, :else => 1
       xml_reader :errors, [Error], :from => 'Error', :in => "Items/Request/Errors"
+      xml_reader :request, ItemLookupRequest, :from => 'Request', :in => 'Items'
 
       def item
         items.only
