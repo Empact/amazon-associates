@@ -1,18 +1,8 @@
 == amazon-associates
 
 Generic Amazon E-commerce REST API using Hpricot with configurable 
-default options and method call options. Uses Response and 
-Element wrapper classes for easy access to REST XML output. It supports ECS 4.0.
-
-It is generic, so you can easily extend <tt>Amazon::Ecs</tt> to support 
-other not implemented REST operations; and it is also generic because it just wraps around
-Hpricot element object, instead of providing one-to-one object/attributes to XML elements map.
-
-If in the future, there is a change in REST XML output structure, 
-no changes will be required on <tt>amazon-ecs</tt> library, 
-instead you just need to change the element path.
-
-Version: 0.6
+default options and method call options. Uses Response wrapper classes
+for easy access to REST XML output. It supports ECS 4.0.
 
 == INSTALLATION
 
@@ -23,13 +13,13 @@ Version: 0.6
     require 'amazon-associates'
 	
     # set the default options; options will be camelized and converted to REST request parameters.
-    Amazon::Ecs.options = {:aWS_access_key_id => [your developer token]}
+    Amazon::Ecs.options = {:aws_access_key_id => [your developer token]}
 
     # options provided on method call will merge with the default options
     res = Amazon::Ecs.item_search('ruby', {:response_group => 'Medium', :sort => 'salesrank'})
 
     # some common response object methods
-    res.is_valid_request?     # return true if request is valid
+    res.request.valid?        # return true if request is valid
     res.has_error?            # return true if there is an error
     res.error                 # return error message if there is any
     res.total_pages           # return total pages
@@ -39,12 +29,12 @@ Version: 0.6
     # traverse through each item (Amazon::Element)
     res.items.each do |item|
       # retrieve string value using XML path
-      item.get('asin')
-      item.get('itemattributes/title')
+      item.asin
+      item.attributes['Title']
 
       # or return Amazon::Element instance
-      atts = item.search_and_convert('itemattributes')
-      atts.get('title')
+      atts = item.attributes
+      atts['Title']
   
       # return first author or a string array of authors
       atts.get('author')          # 'Author 1'
@@ -90,4 +80,5 @@ http://www.awszone.com/scratchpads/aws/ecs.us/index.aws
 
 (The MIT License)
 
-Copyright (c) 2006 Herryanto Siatono, Pluit Solutions
+Copyright (c) 2008 Dan Pickett, Enlight Solutions; Herryanto Siatono,
+Pluit Solutions; and Ben Woosley

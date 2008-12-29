@@ -1,1 +1,0 @@
-require 'amazon-associates'
