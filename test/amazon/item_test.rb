@@ -9,7 +9,7 @@ module Amazon
       end
 
       def test_item_search
-        assert @ruby_search.request_valid?
+        assert @ruby_search.request.valid?
         assert @ruby_search.total_results >= 3600
         assert @ruby_search.total_pages >= 360
       end
@@ -28,13 +28,13 @@ module Amazon
 
       def test_item_search_with_paging
         resp = Amazon::Associates.item_search('ruby', :item_page => 2)
-        assert resp.request_valid?
+        assert resp.request.valid?
         assert 2, resp.current_page
       end
 
       def test_item_search_with_response_group_array
         resp = Amazon::Associates.item_search('ruby', :response_group => %w{Small ItemAttributes Images})
-        assert resp.request_valid?
+        assert resp.request.valid?
       end
 
       def test_item_search_with_invalid_request
@@ -51,12 +51,12 @@ module Amazon
 
       def test_item_search_uk
         resp = Amazon::Associates.item_search('ruby', :country => 'uk')
-        assert resp.request_valid?
+        assert resp.request.valid?
       end
 
       def test_item_search_not_keywords
         resp = Amazon::Associates.item_search(:author => 'rowling')
-        assert resp.request_valid?
+        assert resp.request.valid?
       end
 
       def test_item_search_fake_country_should_throw
@@ -67,7 +67,7 @@ module Amazon
 
       def test_item_search_by_author
         resp = Amazon::Associates.item_search('dave', :type => :author)
-        assert resp.request_valid?
+        assert resp.request.valid?
       end
 
       def test_text_at
@@ -189,55 +189,37 @@ module Amazon
       ## Test item_search
       def test_item_search
         resp = Amazon::Associates.item_search("ruby")
-        assert(resp.request_valid?)
+        assert(resp.request.valid?)
         assert(resp.total_results >= 3600)
         assert(resp.total_pages >= 360)
       end
 
       def test_item_search_with_paging
         resp = Amazon::Associates.item_search("ruby", :item_page => 2)
-        assert resp.request_valid?
+        assert resp.request.valid?
         assert 2, resp.current_page
       end
 
-      def assert_request_raise(request, exception, &block)
-        resp = nil
-        raised = false
-
-        begin
-          resp = request.call
-        rescue exception => ex
-          raised = true
-          yield resp, ex
-        end
-
-        assert raised
-      end
-
       def test_item_search_with_invalid_request
-        assert_request_raise(block { Amazon::Associates.item_search(nil) },
-                              Amazon::Associates::RequiredParameterMissing) do |resp|
-          assert !resp.request_valid?
+        assert_raise(Amazon::Associates::RequiredParameterMissing) do
+          Amazon::Associates.item_search(nil)
         end
       end
 
       def test_item_search_with_no_result
-        assert_request_raise(block { Amazon::Associates.item_search("afdsafds") },
-                             Amazon::Associates::ItemNotFound) do |resp|
-          assert resp.request_valid?
-          assert_equal "We did not find any matches for your request.",
-            resp.error
+        assert_raise(Amazon::Associates::ItemNotFound) do
+          Amazon::Associates.item_search("afdsafds")
         end
       end
 
       def test_item_search_uk
         resp = Amazon::Associates.item_search("ruby", :country => :uk)
-        assert resp.request_valid?
+        assert resp.request.valid?
       end
 
       def test_item_search_by_author
         resp = Amazon::Associates.item_search("dave", :type => :author)
-        assert resp.request_valid?
+        assert resp.request.valid?
       end
 
       def test_item_get
@@ -267,17 +249,14 @@ module Amazon
       end
 
       def test_item_lookup_with_invalid_request
-        assert_request_raise(block { Amazon::Associates.item_lookup(nil) },
-                             Amazon::Associates::RequiredParameterMissing) do |resp, ex|
-          assert_equal resp.errors.first == ex
+        assert_raise(Amazon::Associates::RequiredParameterMissing) do
+          Amazon::Associates.item_lookup(nil)
         end
       end
 
       def test_item_lookup_with_no_result
-        assert_request_raise(block { Amazon::Associates.item_lookup("abc") },
-                             Amazon::Associates::ItemNotFound) do |resp|
-          assert resp.request_valid?
-          assert_match(/ABC is not a valid value for ItemId/, resp.error)
+        assert_raise(Amazon::Associates::InvalidParameterValue) do
+          resp = Amazon::Associates.item_lookup("abc")
         end
       end
 
@@ -294,15 +273,6 @@ module Amazon
     end
 
     class ItemTestBroughtIn < Test::Unit::TestCase
-      def test_should_raise_parameters_repeated_in_request
-        Amazon::Associates.options.merge!(:keywords => 'other keywords')
-        # FIXME: I think amazon is giving me the wrong error here, because the message
-        #        makes no sense for repeated parameters
-        assert_raise Amazon::Associates::RequiredParameterMissing, 'Your request should have atleast 1 of the following parameters: AWSAccessKeyId, SubscriptionId.' do
-          Item.find(:all, :keywords => 'funny guys')
-        end
-      end
-
       def test_find_all_should_return_items
         item = Item.find(:all, :keywords => 'upside').first
         assert item
