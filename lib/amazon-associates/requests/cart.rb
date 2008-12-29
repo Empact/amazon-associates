@@ -7,6 +7,8 @@ module Amazon
       case item
       when CartItem
         opts[:"Item.#{index}.CartItemId"] = item.cart_item_id
+      when String
+        opts["Item.#{index}.ASIN"] = item
       when Item
         opts["Item.#{index}.ASIN"] = item.asin
       else
@@ -15,7 +17,9 @@ module Amazon
           raise ArgumentError, "item needs an OfferListingId, ASIN, or ListItemId"
         end
 
-        if id = item.offer_listing_id
+        if id = item[:cart_item_id]
+          opts[:"Item.#{index}.CartItemId"] = id
+        elsif id = item[:offer_listing_id]
           opts[:"Item.#{index}.OfferListingId"] = id
         elsif id = item.delete(:asin)
           opts["Item.#{index}.ASIN"] = id
@@ -30,7 +34,7 @@ module Amazon
       raise ArgumentError, "items are required" if opts[:items].blank?
 
       opts.delete(:items).each_with_index do |(item, count), index|
-        unpack_item(opts, index, item, count)
+        unpack_item(opts, index, item, count || item[:quantity] || 1)
       end
       opts
     end

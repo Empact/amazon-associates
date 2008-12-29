@@ -1,5 +1,5 @@
-%w{ errors extensions/core types/operation_request
-   types/error types/customer_review types/editorial_review types/ordinal types/listmania_list types/browse_node types/measurement types/image types/image_set types/price types/offer types/item types/item_search_request types/cart
+%w{errors extensions/core types/operation_request
+   types/error types/customer_review types/editorial_review types/ordinal types/listmania_list types/browse_node types/measurement types/image types/image_set types/price types/offer types/item types/requests types/cart
    responses/response responses/item_search_response responses/item_lookup_response responses/browse_node_lookup_response responses/cart_responses }.each do |file|
   require File.join(File.dirname(__FILE__), file)
 end
@@ -99,6 +99,7 @@ module Amazon
     end
 
     def self.prepare_url(opts)
+      raise opts.to_options.inspect if opts.to_options.keys.include?(:cart)
       opts.to_options.assert_valid_keys(*valid_arguments(opts[:operation]))
       opts.merge!(:service => 'AWSECommerceService')
 
