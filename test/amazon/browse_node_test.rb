@@ -5,35 +5,33 @@ class Amazon::Associates::BrowseNodeLookupTest < Test::Unit::TestCase
   ## Test browse_node_lookup
   def test_browse_node_lookup
     resp = Amazon::Associates.browse_node_lookup("5", :response_group => "TopSellers")
-    assert resp.request_valid?
-    browse_node_tags = resp.doc.get_elements_by_tag_name("browsenodeid")
-    browse_node_tags.each { |node| assert_equal("5", node.inner_text) }
-    assert_equal "TopSellers", resp.doc.get_elements_by_tag_name("responsegroup").inner_text
+    assert resp.request.valid?
+    assert_equal "5", resp.browse_nodes.only.id
+    assert_equal "TopSellers", resp.request.response_groups.only
   end
 
   def test_browse_node_lookup_with_browse_node_info_response
     resp = Amazon::Associates.browse_node_lookup("5", :response_group => "BrowseNodeInfo")
-    assert resp.request_valid?
-    assert_equal "BrowseNodeInfo", resp.doc.get_elements_by_tag_name("responsegroup").inner_text
+    assert resp.request.valid?
+    assert_equal "BrowseNodeInfo", resp.request.response_groups.only
   end
 
   def test_browse_node_lookup_with_new_releases_response
     resp = Amazon::Associates.browse_node_lookup("5", :response_group => "NewReleases")
-    assert resp.request_valid?
-    assert_equal "NewReleases", resp.doc.get_elements_by_tag_name("responsegroup").inner_text
+    assert resp.request.valid?
+    assert_equal "NewReleases", resp.request.response_groups.only
   end
 
   def test_browse_node_lookup_with_invalid_request
-    resp = Amazon::Associates.browse_node_lookup(nil)
-    assert resp.has_error?
-    assert resp.error
+    assert_raise(Amazon::Associates::RequiredParameterMissing) do
+      Amazon::Associates.browse_node_lookup(nil)
+    end
   end
 
   def test_browse_node_lookup_with_no_result
-    resp = Amazon::Associates.browse_node_lookup("abc")
-
-    assert resp.request_valid?
-    assert_match(/abc is not a valid value for BrowseNodeId/, resp.error)
+    assert_raise(Amazon::Associates::InvalidParameterValue) do
+      Amazon::Associates.browse_node_lookup("abc")
+    end
   end
 
 	def test_items_have_browsenodes

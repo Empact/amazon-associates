@@ -15,6 +15,7 @@ module Amazon
     end
 
     class BrowseNodeLookupRequest < Request
+      xml_reader :response_groups, [:text], :from => 'ResponseGroup', :in => 'BrowseNodeLookupRequest'
     end
 
     class CartRequest < Request

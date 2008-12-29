@@ -5,20 +5,11 @@ module Amazon
 
       attr_reader :url
       delegate :current_page, :to => :request
-      xml_reader :request_valid?, :from => 'IsValid', :in => 'Items/Request'
-
-      xml_reader :item_errors, [Error], :from => 'Error', :in => "Items/Request/Errors"
-      xml_reader :cart_errors, [Error], :from => 'Error', :in => "Cart/Request/Errors"
-
-      def errors
-        item_errors + cart_errors
-      end
 
       def xml_initialize(url)
         @url = url
         # these can't be done as blocks because we need @url available
-        @cart_errors = process_errors(cart_errors)
-        @item_errors = process_errors(item_errors)
+        @errors = process_errors(errors)
         raise errors.first unless errors.empty?
       end
 

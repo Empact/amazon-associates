@@ -3,6 +3,7 @@ module Amazon
     class CartResponse < Response
       xml_reader :cart, Cart, :from => 'Cart', :required => true
       xml_reader :request, CartRequest, :from => 'Request', :in => 'Cart'
+      xml_reader :errors, [Error], :from => 'Error', :in => "Cart/Request/Errors"
     end
 
     class CartCreateResponse < CartResponse
