@@ -3,7 +3,11 @@ require File.join(File.dirname(__FILE__), '../test_helper')
 module Amazon
   module Associates
     class CartTest < Test::Unit::TestCase
+      include FilesystemTestHelper
+
       def setup
+        set_valid_caching_options
+
         @potter = Amazon::Associates.item_lookup("0545010225").items[0]
         @batman = Amazon::Associates.item_search("batman").items[0]
         @create_response = Amazon::Associates.cart_create(:items => {@potter => 1})
@@ -46,8 +50,12 @@ module Amazon
     end
 
     class CartTestsFromAmazonAssociatesGem < Test::Unit::TestCase
+      include FilesystemTestHelper
+
       # create a cart to store cart_id and hmac for add, get, modify, and clear tests
       def setup
+        set_valid_caching_options
+
         @asin = "0672328844"
         resp = Amazon::Associates.cart_create(:items => {@asin => 1})
         @cart_id = resp.cart.id
@@ -133,7 +141,11 @@ module Amazon
     end
 
     class CartTestBroughtIn < Test::Unit::TestCase
+      include FilesystemTestHelper
+
       def setup
+        set_valid_caching_options
+
         @items = %w(potter book jumper).collect do |word|
           Item.first(:keywords => word)
         end

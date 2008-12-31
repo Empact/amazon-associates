@@ -1,6 +1,12 @@
 require File.join(File.dirname(__FILE__), '../test_helper')
 
 class Amazon::Associates::MeasurementTest < Test::Unit::TestCase
+  include FilesystemTestHelper
+
+  def setup
+    set_valid_caching_options
+  end
+
   def test_new
     m = Amazon::Associates::Measurement.new(11.3, 'inches')
     assert_equal 11.3, m.value

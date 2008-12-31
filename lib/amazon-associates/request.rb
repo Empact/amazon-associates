@@ -29,7 +29,7 @@ module Amazon
       request_url = prepare_url(opts)
       response = nil
 
-      if caching_enabled?
+      if cacheable?(opts['Operation'])
         FilesystemCache.sweep
 
         response = FilesystemCache.get(request_url)
@@ -44,7 +44,7 @@ module Amazon
         end
         type = eval(ROXML::XML::Parser.parse(response.body).root.name)
         response = type.from_xml(response.body, request_url)
-        cache_response(request_url, response) if caching_enabled?
+        cache_response(request_url, response) if cacheable?(opts['Operation'])
       end
 
       response
@@ -109,8 +109,12 @@ module Amazon
       end.to_query
     end
 
+    def self.cacheable?(operation)
+      caching_enabled? && !operation.starts_with?('Cart')
+    end
+
     def self.caching_enabled?
-      !self.options[:caching_strategy].blank?
+      !options[:caching_strategy].blank?
     end
 
     def self.cache_response(request, response)

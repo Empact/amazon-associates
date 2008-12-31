@@ -6,23 +6,18 @@ module Amazon
       include FilesystemTestHelper
       context "caching get" do
         setup do
-          get_cache_directory
-          get_valid_caching_options
+          set_valid_caching_options(CACHE_TEST_PATH)
         end
 
         teardown do
-          destroy_cache_directory
-          destroy_caching_options
+          reset_cache
         end
 
         should "optionally allow for a caching strategy in configuration" do
           assert_nothing_raised do
-            Amazon::Associates.configure do |options|
-              options[:caching_strategy] = :filesystem
-              options[:caching_options] = valid_caching_options
-            end
+            set_valid_caching_options(CACHE_TEST_PATH)
           end
-          raise Amazon::Associates.options.inspect unless Amazon::Associates.caching_enabled?
+          assert Amazon::Associates.caching_enabled?
         end
 
         should "raise an exception if a caching strategy is specified that is not found" do

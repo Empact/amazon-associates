@@ -1,7 +1,5 @@
 require File.join(File.dirname(__FILE__), '../test_helper')
 
-ITEM_CACHE_PATH = File.join(File.dirname(__FILE__), "../utilities/item_cache")
-
 module Amazon
   module Associates
     class ItemTest < Test::Unit::TestCase
@@ -9,7 +7,7 @@ module Amazon
       
       ## Test item_search
       def setup
-        get_valid_caching_options(ITEM_CACHE_PATH)
+        set_valid_caching_options
         @ruby_search = Amazon::Associates.item_search('ruby')
       end
 
@@ -98,8 +96,8 @@ module Amazon
         item = Amazon::Associates.item_search('ipod', :search_index => 'All', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images,BrowseNodes').items.first
 
         # Measurements & Image
-        assert_equal(Amazon::Associates::Image.new("http://ecx.images-amazon.com/images/I/41qEH4hLTRL._SL75_.jpg",
-            Amazon::Associates::Measurement.new(56, 'pixels'),
+        assert_equal(Amazon::Associates::Image.new("http://ecx.images-amazon.com/images/I/416IhG9obPL._SL75_.jpg",
+            Amazon::Associates::Measurement.new(75, 'pixels'),
             Amazon::Associates::Measurement.new(75, 'pixels')),
           item.small_image)
 
@@ -190,7 +188,7 @@ module Amazon
       include FilesystemTestHelper
       
       def setup
-        get_valid_caching_options(ITEM_CACHE_PATH)
+        set_valid_caching_options
         Amazon::Associates.options.merge!(:response_group => "Large")
       end
 
@@ -284,7 +282,7 @@ module Amazon
       include FilesystemTestHelper
       
       def setup
-        get_valid_caching_options(ITEM_CACHE_PATH)
+        set_valid_caching_options
       end
 
       def test_find_all_should_return_items

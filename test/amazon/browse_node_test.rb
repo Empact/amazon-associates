@@ -1,6 +1,11 @@
 require File.dirname(__FILE__) + "/../test_helper"
 
 class Amazon::Associates::BrowseNodeLookupTest < Test::Unit::TestCase
+  include FilesystemTestHelper
+
+  def setup
+    set_valid_caching_options
+  end
 
   ## Test browse_node_lookup
   def test_browse_node_lookup

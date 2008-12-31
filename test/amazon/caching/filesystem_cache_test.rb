@@ -62,42 +62,46 @@ class Amazon::Associates::FilesystemCacheTest < Test::Unit::TestCase
   context "caching a request" do
     
     setup do
-      get_cache_directory
-      get_valid_caching_options
+      set_valid_caching_options(CACHE_TEST_PATH)
       @resp = Amazon::Associates.item_lookup("0974514055")
       @filename = Digest::SHA1.hexdigest(@resp.url)
     end
     
     teardown do
-      destroy_cache_directory
-      destroy_caching_options
+      reset_cache
     end
     
     should "create a folder in the cache path with the first three letters of the digested filename" do
-      assert FileTest.exists?(File.join(CACHE_PATH, @filename[0..2]))
+      assert FileTest.exists?(File.join(CACHE_TEST_PATH, @filename[0..2]))
     end
     
     should "create a file in the cache path with a digested version of the url " do
-      assert FileTest.exists?(File.join(CACHE_PATH, @filename[0..2], @filename))
+      assert FileTest.exists?(File.join(CACHE_TEST_PATH, @filename[0..2], @filename))
     end
     
     should "create a file in the cache path with the response inside it" do
-      open(File.join(CACHE_PATH + @filename[0..2], @filename)) do |f|
+      open(File.join(CACHE_TEST_PATH + @filename[0..2], @filename)) do |f|
         assert_equal @resp, Marshal.load(f)
       end
+    end
+
+    should "not attemt to cache cart requests" do
+      Amazon::Associates::FilesystemCache.expects(:cache).never
+
+      resp = Amazon::Associates.cart_create(:items => {"0974514055" => 2})
+      filename = Digest::SHA1.hexdigest(resp.url)
+      assert !FileTest.exists?(File.join(CACHE_TEST_PATH, filename[0..2], filename))
     end
   end
   
   context "getting a cached request" do
     setup do
-      get_cache_directory
-      get_valid_caching_options
+      set_valid_caching_options(CACHE_TEST_PATH)
       do_request
     end
     
     teardown do
-      destroy_cache_directory
-      destroy_caching_options
+      reset_cache
     end
     
     should "not do an http request the second time the lookup is performed due a cached copy" do
@@ -121,14 +125,12 @@ class Amazon::Associates::FilesystemCacheTest < Test::Unit::TestCase
   
   context "sweeping cached requests" do
     setup do
-      get_cache_directory
-      get_valid_caching_options
+      set_valid_caching_options(CACHE_TEST_PATH)
       do_request
     end
     
     teardown do
-      destroy_cache_directory
-      destroy_caching_options
+      reset_cache
     end
     
     should "not perform the sweep if the timestamp is within the range of the sweep frequency and quota is not exceeded" do
@@ -161,12 +163,12 @@ class Amazon::Associates::FilesystemCacheTest < Test::Unit::TestCase
       Amazon::Associates::FilesystemCache.expects(:sweep_time_expired?).once.returns(true)
       
       do_request
-      assert FileTest.exists?(File.join(CACHE_PATH, ".amz_timestamp"))
+      assert FileTest.exists?(File.join(CACHE_TEST_PATH, ".amz_timestamp"))
     end
     
     should "purge the cache when performing a sweep" do
       (0..9).each do |n| 
-        test = File.open(File.join(CACHE_PATH, "test_file_#{n}"), "w")
+        test = File.open(File.join(CACHE_TEST_PATH, "test_file_#{n}"), "w")
         test.puts Time.now
         test.close
       end
@@ -175,7 +177,7 @@ class Amazon::Associates::FilesystemCacheTest < Test::Unit::TestCase
       do_request
       
       (0..9).each do |n|
-        assert !FileTest.exists?(File.join(CACHE_PATH, "test_file_#{n}"))
+        assert !FileTest.exists?(File.join(CACHE_TEST_PATH, "test_file_#{n}"))
       end
     end
     
