@@ -203,6 +203,17 @@ module Amazon
         assert !cart.changed?
       end
 
+      def test_shift_is_equivalent_to_add
+        cart = new_cart
+        cart << @items[2]
+        cart.save
+
+        assert_equal 3, cart.quantity
+        assert_equal 3, cart.items.size
+        assert !cart.changed?
+      end
+
+
       def test_modify_has_no_effect_without_save
         cart = new_cart
         cart.add(@items[1])

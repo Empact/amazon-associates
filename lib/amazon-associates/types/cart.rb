@@ -61,6 +61,7 @@ module Amazon
         # TODO: This could be much more sophisticated, collapsing operations and such
         @changes << [action, self, {:items => {item => count}}]
       end
+      alias_method :<<, :add
 
       def clear
         @changes << [:cart_clear, self]
