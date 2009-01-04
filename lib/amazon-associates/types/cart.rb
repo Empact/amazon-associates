@@ -10,6 +10,8 @@ module Amazon
       xml_reader :id, :from => 'CartId'
       xml_reader :hmac, :from => 'HMAC'
 
+      delegate :empty?, :to => :items
+
       def to_hash
         {:id => id,
          :hmac => hmac}

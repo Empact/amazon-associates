@@ -255,6 +255,18 @@ module Amazon
         assert cart.items.empty?
         assert_equal 0, cart.quantity
       end
+
+      def test_cart_empty
+        cart = new_cart
+        assert !cart.items.empty?
+        assert !cart.empty?
+
+        cart.clear
+        cart.save
+
+        assert cart.items.empty?
+        assert cart.empty?
+      end
     end
   end
 end
