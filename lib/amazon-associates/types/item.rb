@@ -2,34 +2,32 @@ require 'will_paginate/collection'
 
 module Amazon
   module Associates
-    class Item
-      include ROXML
-
+    class Item < ApiResult
       xml_name 'Item'
       xml_reader :asin, :from => 'ASIN'
-      xml_reader :detail_page_url, :from => 'DetailPageUrl'
+      xml_reader :detail_page_url
       xml_reader :list_price, Price, :from => 'ListPrice', :in => 'ItemAttributes'
       xml_reader :attributes, {:key => :name,
                                :value => :content}, :in => 'ItemAttributes'
-      xml_reader :small_image, Image, :from => 'SmallImage'
+      xml_reader :small_image, Image
       #TODO: would be nice to have :key => '@category' and :value => {[Image] => 'SwatchImage'}
-      xml_reader :image_sets, [ImageSet], :from => 'ImageSet', :in => 'ImageSets'
-      xml_reader :listmania_lists, [ListmaniaList], :from => 'ListmaniaList', :in => 'ListmaniaLists'
-      xml_reader :browse_nodes, [BrowseNode], :from => 'BrowseNode', :in => 'BrowseNodes'
-      xml_reader :offers, [Offer], :from => 'Offer', :in => 'Offers'
+      xml_reader :image_sets, [ImageSet]
+      xml_reader :listmania_lists, [ListmaniaList]
+      xml_reader :browse_nodes, [BrowseNode]
+      xml_reader :offers, [Offer]
       # TODO: This should be offers.total_new
       xml_reader :total_new_offers, :from => 'TotalNew', :in => 'OfferSummary', :as => Integer
       # TODO: This should be offers.total
-      xml_reader :total_offers, :from => 'TotalOffers', :in => 'Offers', :as => Integer
+      xml_reader :total_offers, :in => 'Offers', :as => Integer
 
-      xml_reader :creators, {:key => {:attr => 'Role'}, :value => :content}, :from => 'Creator', :in => 'ItemAttributes'
-      xml_reader :authors, [:text], :from => 'Author', :in => 'ItemAttributes'
-      xml_reader :edition, Ordinal, :from => 'Edition', :in => 'ItemAttributes'
-      xml_reader :batteries_included?, :from => 'BatteriesIncluded', :in => 'ItemAttributes'
-      xml_reader :lowest_new_price, Price, :from => 'LowestNewPrice', :in => 'OfferSummary'
+      xml_reader :creators, {:key => {:attr => 'Role'}, :value => :content}, :in => 'ItemAttributes'
+      xml_reader :authors, [:text], :in => 'ItemAttributes'
+      xml_reader :edition, Ordinal, :in => 'ItemAttributes'
+      xml_reader :batteries_included?, :in => 'ItemAttributes'
+      xml_reader :lowest_new_price, Price, :in => 'OfferSummary'
 
-      xml_reader :editorial_reviews, [EditorialReview], :from => 'EditorialReview', :in => 'EditorialReviews'
-      xml_reader :customer_reviews, [CustomerReview], :in => 'CustomerReviews'
+      xml_reader :editorial_reviews, [EditorialReview]
+      xml_reader :customer_reviews, [CustomerReview]
 
       def ==(other)
         asin == other.asin

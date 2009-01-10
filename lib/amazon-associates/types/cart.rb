@@ -2,9 +2,7 @@ require 'roxml'
 
 module Amazon
   module Associates
-    class Cart
-      include ROXML
-
+    class Cart < ApiResult
       xml_reader :items, [CartItem], :from => 'CartItem', :in => 'CartItems', :frozen => true
       xml_reader :purchase_url, :from => 'PurchaseURL'
       xml_reader :id, :from => 'CartId'

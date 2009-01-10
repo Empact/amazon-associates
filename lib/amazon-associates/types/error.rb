@@ -1,10 +1,8 @@
 module Amazon
   module Associates
-    class Error
-      include ROXML
-
-      xml_reader :code, :from => 'Code'
-      xml_reader :message, :from => 'Message'
+    class Error < ApiResult
+      xml_reader :code
+      xml_reader :message
     end
   end
 end

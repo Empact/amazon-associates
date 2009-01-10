@@ -1,8 +1,8 @@
 module Amazon
-  class EditorialReview
-    include ROXML
-
-    xml_reader :source, :from => 'Source'
-    xml_reader :content, :from => 'Content'
+  module Associates
+    class EditorialReview < ApiResult
+      xml_reader :source
+      xml_reader :content
+    end
   end
 end

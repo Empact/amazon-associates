@@ -1,10 +1,8 @@
 module Amazon
   module Associates
-    class Request
-      include ROXML
-
+    class Request < ApiResult
       xml_reader :valid?, :from => 'IsValid'
-      xml_reader :errors, [Error], :from => 'Error' do |errors|
+      xml_reader :errors, [Error] do |errors|
         errors.collect do |error|
           if error.code && !IGNORE_ERRORS.include?(error.code)
             if exception = ERROR[error.code]
@@ -32,7 +30,7 @@ module Amazon
     end
 
     class BrowseNodeLookupRequest < Request
-      xml_reader :response_groups, [:text], :from => 'ResponseGroup', :in => 'BrowseNodeLookupRequest'
+      xml_reader :response_groups, [:text], :in => 'BrowseNodeLookupRequest'
     end
 
     class CartRequest < Request

@@ -1,11 +1,9 @@
 module Amazon
   module Associates
-    class Image
-      include ROXML
-
+    class Image < ApiResult
       xml_reader :url, :from => 'URL'
-      xml_reader :width, Measurement, :from => 'Width'
-      xml_reader :height, Measurement, :from => 'Height'
+      xml_reader :width, Measurement
+      xml_reader :height, Measurement
 
       def initialize(url, width, height)
         @url = url

@@ -1,9 +1,7 @@
 module Amazon
   module Associates
-    class ImageSet
-      include ROXML
-
-      xml_reader :category, :attr => 'Category'
+    class ImageSet < ApiResult
+      xml_reader :category
       xml_reader :small, Image, :from => 'SmallImage'
       xml_reader :medium, Image, :from => 'MediumImage'
       xml_reader :large, Image, :from => 'LargeImage'

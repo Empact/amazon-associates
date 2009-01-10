@@ -1,8 +1,6 @@
 module Amazon
   module Associates
-    class Response
-      include ROXML
-
+    class Response < ApiResult
       attr_reader :url
       delegate :current_page, :errors, :to => :request
 

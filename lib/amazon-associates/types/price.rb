@@ -1,7 +1,6 @@
 module Amazon
   module Associates
-    class Price
-      include ROXML
+    class Price < ApiResult
       include Comparable
       attr_reader :cents, :currency
 

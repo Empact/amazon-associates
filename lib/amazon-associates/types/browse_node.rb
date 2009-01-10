@@ -1,17 +1,15 @@
 module Amazon
   module Associates
-    class Item
+    class Item < ApiResult
       # forward-declaration...
     end
 
-    class BrowseNode
-      include ROXML
-
+    class BrowseNode < ApiResult
       xml_reader :id, :text => 'BrowseNodeId'
       xml_reader :name, :from => 'Name'
-      xml_reader :parent, BrowseNode, :from => 'BrowseNode', :in => 'Ancestors'
-      xml_reader :children, [BrowseNode], :from => 'Children'
-      xml_reader :top_sellers, [Item], :from => 'TopSeller', :in => 'TopSellers'
+      xml_reader :parent, BrowseNode, :in => 'Ancestors'
+      xml_reader :children, [BrowseNode]
+      xml_reader :top_sellers, [Item]
 
       def initialize(id, name, parent)
         @id = id

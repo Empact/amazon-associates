@@ -1,11 +1,10 @@
 module Amazon
   module Associates
-    class Measurement
-      include ROXML
+    class Measurement < ApiResult
       include Comparable
 
       xml_reader :value, :content
-      xml_reader :units, :attr => 'Units'
+      xml_reader :units, :attr
 
       def xml_initialize
         initialize(value, units)

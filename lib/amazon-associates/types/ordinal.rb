@@ -1,8 +1,7 @@
 module Amazon
   module Associates
-    class Ordinal
+    class Ordinal < ApiResult
       include Comparable
-      include ROXML
 
       xml_reader :value, :content do |val|
         val.to_i
