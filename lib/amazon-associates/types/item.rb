@@ -4,6 +4,7 @@ module Amazon
   module Associates
     class Item < ApiResult
       xml_name 'Item'
+
       xml_reader :asin, :from => 'ASIN'
       xml_reader :detail_page_url
       xml_reader :list_price, Price, :from => 'ListPrice', :in => 'ItemAttributes'
@@ -11,7 +12,9 @@ module Amazon
                                :value => :content}, :in => 'ItemAttributes'
       xml_reader :small_image, Image
       #TODO: would be nice to have :key => '@category' and :value => {[Image] => 'SwatchImage'}
-      xml_reader :image_sets, [ImageSet]
+      xml_reader :image_sets, [ImageSet] do |sets|
+        sets.index_by(&:category)
+      end
       xml_reader :listmania_lists, [ListmaniaList]
       xml_reader :browse_nodes, [BrowseNode]
       xml_reader :offers, [Offer]

@@ -42,12 +42,10 @@ module Amazon
         unless response.kind_of? Net::HTTPSuccess
           raise RequestError, "HTTP Response: #{response.inspect}"
         end
-        type = eval(ROXML::XML::Parser.parse(response.body).root.name)
-        response = type.from_xml(response.body, request_url)
         cache_response(request_url, response) if cacheable?(opts['Operation'])
       end
 
-      response
+      eval(ROXML::XML::Parser.parse(response.body).root.name).from_xml(response.body, request_url)
     end
 
     BASE_ARGS = [:aWS_access_key_id, :operation, :associate_tag, :response_group]

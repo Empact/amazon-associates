@@ -96,8 +96,8 @@ module Amazon
         item = Amazon::Associates.item_search('ipod', :search_index => 'All', :response_group => 'Small,Offers,ItemAttributes,VariationSummary,Images,BrowseNodes').items.first
 
         # Measurements & Image
-        assert_equal(Amazon::Associates::Image.new("http://ecx.images-amazon.com/images/I/416IhG9obPL._SL75_.jpg",
-            Amazon::Associates::Measurement.new(75, 'pixels'),
+        assert_equal(Amazon::Associates::Image.new("http://ecx.images-amazon.com/images/I/41zt-RXYhfL._SL75_.jpg",
+            Amazon::Associates::Measurement.new(56, 'pixels'),
             Amazon::Associates::Measurement.new(75, 'pixels')),
           item.small_image)
 
@@ -107,14 +107,14 @@ module Amazon
         assert_equal false, item.batteries_included?
 
         # price
-        assert_equal Amazon::Associates::Price.new('$149.99', 14999, 'USD'), item.list_price
+        assert_equal Amazon::Associates::Price.new('$249.99', 24999, 'USD'), item.list_price
 
         # integers
         assert_instance_of Fixnum, item.total_new_offers
         assert_instance_of Fixnum, item.total_offers
 
         # attributes
-        assert_equal "primary", item.image_sets.first.category
+        assert item.image_sets['primary'], item.image_sets.inspect
         assert_equal "Mary GrandPré", Amazon::Associates.item_lookup('0545010225').item.creators['Illustrator']
 
         # browsenodes
@@ -240,7 +240,7 @@ module Amazon
         assert_equal ['Dave Thomas', 'Chad Fowler', 'Andy Hunt'], item.authors
 
         # test get_hash
-        small_image = item.image_sets.first.small
+        small_image = item.image_sets.values.first.small
 
         assert small_image.url != nil
         assert_equal 75, small_image.height.value
@@ -315,8 +315,7 @@ module Amazon
       end
 
       def test_item_performers_unpacked_to_array
-        assert_equal(["Jeff Bridges", "Jr. Robert Downey", "Clark Gregg",
-                      "Terrence Howard", "Gwyneth Paltrow"],
+        assert_equal(["Robert Downey Jr.", "Gwyneth Paltrow", "Terrence Howard", "Jeff Bridges", "Leslie Bibb"],
           Item.find('B00005JPS8').attributes['Actor'])
       end
 

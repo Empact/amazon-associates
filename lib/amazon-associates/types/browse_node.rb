@@ -7,7 +7,7 @@ module Amazon
     class BrowseNode < ApiResult
       xml_reader :id, :text => 'BrowseNodeId'
       xml_reader :name, :from => 'Name'
-      xml_reader :parent, BrowseNode, :in => 'Ancestors'
+      xml_reader :parent, BrowseNode, :from => 'BrowseNode', :in => 'Ancestors'
       xml_reader :children, [BrowseNode]
       xml_reader :top_sellers, [Item]
 
