@@ -3,7 +3,7 @@ module Amazon
     class Ordinal < ApiResult
       include Comparable
 
-      xml_reader :value, :content do |val|
+      xml_reader :value, :from => :content do |val|
         val.to_i
       end
 

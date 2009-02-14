@@ -7,30 +7,30 @@ module Amazon
 
       xml_reader :asin, :from => 'ASIN'
       xml_reader :detail_page_url
-      xml_reader :list_price, Price, :from => 'ListPrice', :in => 'ItemAttributes'
-      xml_reader :attributes, {:key => :name,
-                               :value => :content}, :in => 'ItemAttributes'
-      xml_reader :small_image, Image
+      xml_reader :list_price, :as => Price, :from => 'ListPrice', :in => 'ItemAttributes'
+      xml_reader :attributes, :as => {:key => :name,
+                                      :value => :content}, :in => 'ItemAttributes'
+      xml_reader :small_image, :as => Image
       #TODO: would be nice to have :key => '@category' and :value => {[Image] => 'SwatchImage'}
-      xml_reader :image_sets, [ImageSet] do |sets|
+      xml_reader :image_sets, :as => [ImageSet] do |sets|
         sets.index_by(&:category)
       end
-      xml_reader :listmania_lists, [ListmaniaList]
-      xml_reader :browse_nodes, [BrowseNode]
-      xml_reader :offers, [Offer]
+      xml_reader :listmania_lists, :as => [ListmaniaList]
+      xml_reader :browse_nodes, :as => [BrowseNode]
+      xml_reader :offers, :as => [Offer]
       # TODO: This should be offers.total_new
       xml_reader :total_new_offers, :from => 'TotalNew', :in => 'OfferSummary', :as => Integer
       # TODO: This should be offers.total
       xml_reader :total_offers, :in => 'Offers', :as => Integer
 
-      xml_reader :creators, {:key => {:attr => 'Role'}, :value => :content}, :in => 'ItemAttributes'
-      xml_reader :authors, [:text], :in => 'ItemAttributes'
-      xml_reader :edition, Ordinal, :in => 'ItemAttributes'
+      xml_reader :creators, :as => {:key => {:attr => 'Role'}, :value => :content}, :in => 'ItemAttributes'
+      xml_reader :authors, :as => [], :in => 'ItemAttributes'
+      xml_reader :edition, :as => Ordinal, :in => 'ItemAttributes'
       xml_reader :batteries_included?, :in => 'ItemAttributes'
-      xml_reader :lowest_new_price, Price, :in => 'OfferSummary'
+      xml_reader :lowest_new_price, :as => Price, :in => 'OfferSummary'
 
-      xml_reader :editorial_reviews, [EditorialReview]
-      xml_reader :customer_reviews, [CustomerReview]
+      xml_reader :editorial_reviews, :as => [EditorialReview]
+      xml_reader :customer_reviews, :as => [CustomerReview]
 
       def ==(other)
         asin == other.asin

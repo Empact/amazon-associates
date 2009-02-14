@@ -2,8 +2,8 @@ module Amazon
   module Associates
     class Image < ApiResult
       xml_reader :url, :from => 'URL'
-      xml_reader :width, Measurement
-      xml_reader :height, Measurement
+      xml_reader :width, :as => Measurement
+      xml_reader :height, :as => Measurement
 
       def initialize(url = nil, width = nil, height = nil)
         @url = url

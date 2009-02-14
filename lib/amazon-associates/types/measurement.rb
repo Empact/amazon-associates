@@ -3,8 +3,8 @@ module Amazon
     class Measurement < ApiResult
       include Comparable
 
-      xml_reader :value, :content, :as => Float
-      xml_reader :units, :attr
+      xml_reader :value, :from => :content, :as => Float
+      xml_reader :units, :from => :attr
 
       def initialize(value = nil, units = 'pixels')
         @value = value && Float(value)
@@ -36,7 +36,7 @@ module Amazon
       end
 
       def normalize_hundredths
-        if @units.starts_with? 'hundredths-'
+        if @units.try(:starts_with?, 'hundredths-')
           @value /= 100.0
           @units = @units.split('hundredths-')[1]
         end
