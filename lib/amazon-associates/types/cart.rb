@@ -79,7 +79,6 @@ module Amazon
       def initialize
         @changes = []
       end
-      alias_method :xml_initialize, :initialize
     end
   end
 end

@@ -26,6 +26,10 @@ module Amazon
     def self.send_request(opts)
       opts.to_options!
       opts.reverse_merge! options.except(:caching_options, :caching_strategy)
+      if opts[:aWS_access_key_id].blank?
+        raise ArgumentError, "amazon-associates requires the :aws_access_key_id option"
+      end
+
       request_url = prepare_url(opts)
       response = nil
 

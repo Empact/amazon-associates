@@ -7,7 +7,8 @@ module Amazon
       xml_reader :request, ItemLookupRequest, :in => 'Items'
 
       def item
-        items.only
+        raise IndexError, "more than one item" if items.size > 1
+        items.first
       end
     end
   end

@@ -5,7 +5,7 @@ module Amazon
       xml_reader :width, Measurement
       xml_reader :height, Measurement
 
-      def initialize(url, width, height)
+      def initialize(url = nil, width = nil, height = nil)
         @url = url
         @width = to_measurement(width)
         @height = to_measurement(height)
@@ -30,7 +30,7 @@ module Amazon
 
     private
       def to_measurement(arg)
-        arg.is_a?(Measurement) ? arg : Measurement.new(arg, 'pixels')
+        arg && (arg.is_a?(Measurement) ? arg : Measurement.new(arg, 'pixels'))
       end
     end
   end

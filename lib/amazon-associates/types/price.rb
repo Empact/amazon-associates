@@ -8,7 +8,7 @@ module Amazon
       xml_reader :currency, :from => 'CurrencyCode'
       xml_reader :cents, :from => 'Amount', :as => Integer
 
-      def initialize(str, cents = nil, currency = nil)
+      def initialize(str = nil, cents = nil, currency = nil)
         @to_s = str.to_s
         @cents = Integer(cents)
         @currency = currency.to_s

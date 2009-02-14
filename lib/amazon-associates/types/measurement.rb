@@ -3,21 +3,13 @@ module Amazon
     class Measurement < ApiResult
       include Comparable
 
-      xml_reader :value, :content
+      xml_reader :value, :content, :as => Float
       xml_reader :units, :attr
 
-      def xml_initialize
-        initialize(value, units)
-      end
-
-      def initialize(value, units = 'pixels')
-        @value = Float(value)
+      def initialize(value = nil, units = 'pixels')
+        @value = value && Float(value)
         @units = units.to_s
-
-        if @units.starts_with? 'hundredths-'
-          @value /= 100.0
-          @units = @units.split('hundredths-')[1]
-        end
+        normalize_hundredths
       end
 
       def to_s
@@ -36,6 +28,18 @@ module Amazon
         return nil unless @units == other.units
 
         @value <=> other.value
+      end
+
+    private
+      def after_parse
+        normalize_hundredths
+      end
+
+      def normalize_hundredths
+        if @units.starts_with? 'hundredths-'
+          @value /= 100.0
+          @units = @units.split('hundredths-')[1]
+        end
       end
     end
   end

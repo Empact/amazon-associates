@@ -7,8 +7,8 @@ module Amazon
         val.to_i
       end
 
-      def initialize(value)
-        @value = value.to_i
+      def initialize(value = nil)
+        @value = value && value.to_i
       end
 
       def to_s

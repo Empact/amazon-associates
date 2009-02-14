@@ -338,10 +338,10 @@ module Amazon
 
       def test_find_with_different_sort_returns_different
         params = {:keywords => 'potter'}
-        assert_not_equal Item.find(:first, params.merge(:sort => Amazon::Associates.sort_types['Books'][3])),
-          Item.find(:first, params.merge(:sort => Amazon::Associates.sort_types['Books'][7]))
-        assert_equal Item.find(:first, params.merge(:sort => Amazon::Associates.sort_types['Books'][3])),
-          Item.find(:first, params.merge(:sort => Amazon::Associates.sort_types['Books'][3]))
+        assert_not_equal Item.find(:first, params.merge(:sort => Amazon::Associates::SORT_TYPES['Books'][3])),
+          Item.find(:first, params.merge(:sort => Amazon::Associates::SORT_TYPES['Books'][7]))
+        assert_equal Item.find(:first, params.merge(:sort => Amazon::Associates::SORT_TYPES['Books'][3])),
+          Item.find(:first, params.merge(:sort => Amazon::Associates::SORT_TYPES['Books'][3]))
       end
 
       def test_find_too_far_a_page_is_error
