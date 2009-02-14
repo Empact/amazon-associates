@@ -1,3 +1,4 @@
+require 'rubygems'
 module ROXML
   SILENCE_XML_NAME_WARNING = true
 end

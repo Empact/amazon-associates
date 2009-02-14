@@ -1,58 +1,59 @@
 require 'rake'
-require 'rake/testtask'
+
+begin
+  require 'jeweler'
+  Jeweler::Tasks.new do |s|
+    s.name = "amazon-associates"
+    s.summary = "Generic Amazon Associates Web Service (Formerly ECS) REST API. Supports ECS 4.0."
+    s.email = "ben.woosley@gmail.com"
+    s.homepage = "http://github.com/Empact/amazon-associates"
+    s.description = "amazon-associates offers object-oriented access to the Amazon Associates API, built on ROXML"
+    s.authors = ["Ben Woosley", "Dan Pickett", "Herryanto Siatono"]
+    s.add_dependency("roxml", ">= 2.4.3")
+
+#    s.require_path = "lib"
+#    s.autorequire = "amazon-associates"
+#    s.test_files = FileList["test/**/*test.rb"].to_a
+#    s.files = FileList["lib/**/*"].to_a
+  end
+rescue LoadError
+  puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
+end
+
 require 'rake/rdoctask'
-require 'rake/gempackagetask'
-require 'pathname'
+Rake::RDocTask.new do |rdoc|
+  rdoc.rdoc_dir = 'rdoc'
+  rdoc.title = 'amazon-associates'
+  rdoc.options << '--line-numbers' << '--inline-source' << "--main README.rdoc"
+  rdoc.rdoc_files.include('README.rdoc')
+  rdoc.rdoc_files.include('CHANGELOG')
+  rdoc.rdoc_files.include('lib/**/*.rb')
+end
 
-desc "Run unit tests."
-task :default => :test
-
-desc "Test the amazon_associate library."
+require 'rake/testtask'
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
-  t.test_files = FileList["test/**/*test.rb"]
+  t.test_files = FileList["test/**/*_test.rb"]
   t.verbose = true
 end
 
-spec = Gem::Specification.new do |s|
-  s.name = "amazon-associates"
-  s.version = "0.6.2"
-
-  s.specification_version = 2 if s.respond_to? :specification_version=
-
-  s.authors = ["Ben Woosley", "Dan Pickett", "Herryanto Siatono"]
-  s.email = ["ben.woosley@gmail.com", "dpickett@enlightsolutions.com", "herryanto@pluitsolutions.com"]
-  s.homepage = "http://github.com/Empact/amazon-associates/tree/master"
-  s.platform = Gem::Platform::RUBY
-  s.summary = "Generic Amazon Associates Web Service (Formerly ECS) REST API. Supports ECS 4.0."
-  s.has_rdoc = true
-  s.rdoc_options = ["--line-numbers", "--inline-source", "--main", "README.rdoc"]
-  s.require_path = "lib"
-  s.autorequire = "amazon-associates"
-  s.test_files = FileList["test/**/*test.rb"].to_a
-  s.files = FileList["lib/**/*"].to_a
-  s.has_rdoc = true
-  s.extra_rdoc_files = ["README.rdoc", "CHANGELOG"]
-  s.add_dependency("roxml", ">= 2.3.1")
+require 'spec/rake/spectask'
+Spec::Rake::SpecTask.new(:spec) do |t|
+  t.libs << 'lib' << 'spec'
+  t.spec_files = FileList['spec/**/*_spec.rb']
 end
 
-desc "Generate a gemspec file"
-task :gemspec do
-  File.open("#{spec.name}.gemspec", "w") do |f|
-    f.write spec.to_ruby
-  end
+Spec::Rake::SpecTask.new(:rcov) do |t|
+  t.libs << 'lib' << 'spec'
+  t.spec_files = FileList['spec/**/*_spec.rb']
+  t.rcov = true
 end
 
-task :package=>:rdoc
-task :rdoc=>:test
-
-desc "Create a RubyGem project"
-Rake::GemPackageTask.new(spec).define
-
-desc "Install the gem"
-task :install => [:package] do
-  sh %{sudo gem install pkg/#{spec.name}-#{spec.version}}
+begin
+  require 'cucumber/rake/task'
+  Cucumber::Rake::Task.new(:features)
+rescue LoadError
+  puts "Cucumber is not available. In order to run features, you must: sudo gem install cucumber"
 end
 
-desc "Clobber generated files"
-task :clobber=>[:clobber_package, :clobber_rdoc]
+task :default => :spec
