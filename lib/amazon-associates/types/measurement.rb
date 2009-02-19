@@ -32,6 +32,7 @@ module Amazon
 
     private
       def after_parse
+        @units ||= 'pixels'
         normalize_hundredths
       end
 

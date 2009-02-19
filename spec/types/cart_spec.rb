@@ -5,18 +5,19 @@ module Amazon
     describe Cart do
       before(:all) do
         @potter = Amazon::Associates::item_lookup("0545010225").item
-        @batman = Amazon::Associates::item_search("batman").item
+        @batman = Amazon::Associates::item_search("batman").items.first
       end
 
       describe "#create" do
         it "should create a cart with items in hash 'item => quantity' form" do
           cart = Cart.create(@potter => 1, @batman => 3)
-          cart.items.index_by(&:quantity).should = {1 => @potter, 3 => @batman}
+          cart.items.index_by(&:quantity).should == {1 => @potter, 3 => @batman}
         end
 
         it "should create a chart with items in array form, implicitly 1 item each" do
-          cart = Cart.create(@potter, @batman)
-          cart.items.group_by(&:quantity).should = {1 => [@potter, @batman]}
+          cart = Cart.create([@potter, @batman])
+          cart.items.map(&:asin).should == [@potter.asin, @batman.asin]
+          cart.items.map(&:quantity).should == [1, 1]
         end
       end
 

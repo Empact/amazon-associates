@@ -23,7 +23,7 @@ module Amazon
       # TODO: This should be offers.total
       xml_reader :total_offers, :in => 'Offers', :as => Integer
 
-      xml_reader :creators, :as => {:key => {:attr => 'Role'}, :value => :content}, :in => 'ItemAttributes'
+      xml_reader :creators, :as => {:key => '@Role', :value => :content}, :in => 'ItemAttributes'
       xml_reader :authors, :as => [], :in => 'ItemAttributes'
       xml_reader :edition, :as => Ordinal, :in => 'ItemAttributes'
       xml_reader :batteries_included?, :in => 'ItemAttributes'

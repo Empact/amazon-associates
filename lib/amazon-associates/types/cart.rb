@@ -21,9 +21,11 @@ module Amazon
       #   merge_cart: false
       #   list_item_id: nil
       def self.create(items, args = nil)
-        items = items.inject({}) do |all, (item, count)|
-          all[item] = count || 1
-          all
+        if items.is_a?(Array)
+          items = items.inject({}) do |all, (item, count)|
+            all[item] = count || 1
+            all
+          end
         end
         Amazon::Associates.cart_create(items, args).cart
       end
