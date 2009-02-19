@@ -72,8 +72,9 @@ module Amazon
       end
 
       def options
+        @options[:aWS_access_key_id] ||= ENV['AMAZON_ACCESS_KEY_ID']
         if access_key = @options.delete(:aws_access_key_id)
-          @options[:aWS_access_key_id] = access_key
+          @options[:aWS_access_key_id] ||= access_key
         end
         @options
       end
