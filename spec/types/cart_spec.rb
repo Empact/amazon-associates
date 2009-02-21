@@ -1,4 +1,4 @@
-require 'amazon-associates'
+require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 module Amazon
   module Associates
@@ -6,107 +6,151 @@ module Amazon
       before(:all) do
         @potter = Amazon::Associates::item_lookup("0545010225").item
         @batman = Amazon::Associates::item_search("batman").items.first
+        @joker = Amazon::Associates::item_search("joker").items.first
+
+        @existing_items = [@potter, @batman]
+        @existing_cart = Cart.create(@potter => 1, @batman => 3)
       end
 
-      describe "#create" do
-        it "should create a cart with items in hash 'item => quantity' form" do
-          cart = Cart.create(@potter => 1, @batman => 3)
-          cart.items.index_by(&:quantity).should == {1 => @potter, 3 => @batman}
+      describe "a cart", :shared => true do
+        it "should have a valid purchase_url" do
+          @cart.purchase_url.should_not be_blank
         end
 
-        it "should create a chart with items in array form, implicitly 1 item each" do
-          cart = Cart.create([@potter, @batman])
-          cart.items.map(&:asin).should == [@potter.asin, @batman.asin]
-          cart.items.map(&:quantity).should == [1, 1]
+        it "should have a valid hmac" do
+          @cart.hmac.should_not be_blank
+        end
+
+        it "should have a valid id" do
+          @cart.id.should_not be_blank
+        end
+
+        describe "#items" do
+          subject { @cart.items }
+
+          it { should be_an_instance_of(Array) }
+          it { should be_frozen }
+        end
+      end
+
+      describe "a valid cart", :shared => true do
+        it_should_behave_like "a cart"
+
+        it "should be in a valid state" do
+          @cart.changed?.should be_false
         end
       end
 
-      describe "#get" do
-        before do
-          @created_cart = Cart.create(@potter => 1, @batman => 3)
-        end
+      describe "a modified cart", :shared => true do
+        it_should_behave_like "a cart"
 
-        it "should retrieve existing carts" do
-          Cart.get(@created_cart).should == @created_cart
+        it "should be in a valid state" do
+          @cart.changed?.should be_true
         end
       end
-    end
-  end
-end
 
-#
-#module Amazon
-#  module Associates
-#    class CartTest < Test::Unit::TestCase
-#      include FilesystemTestHelper
-#
-#      def setup
-#        set_valid_caching_options
-#
-#        @potter = Amazon::Associates.item_lookup("0545010225").items[0]
-#        @batman = Amazon::Associates.item_search("batman").items[0]
-#        @create_response = Amazon::Associates.cart_create(:items => {@potter => 1})
-#      end
-#
-#      def test_cart_get
-#        fetched_cart = Amazon::Associates.cart_get(@create_response.cart)
-#        assert_equal @create_response.cart.items, fetched_cart.cart.items
-#      end
-#
-#      def test_cart_add
-#        result = Amazon::Associates.cart_add(@create_response.cart, :items => {@batman => 5})
-#
-#        assert_equal 2, result.cart.items.size # Has both items
-#        assert_equal 6, result.cart.items.sum {|i| i.quantity } # 6 total
-#        assert       result.cart.items.include?(@batman) # includes the new
-#        assert_equal 5, result.cart.items.find {|i| i == @batman }.quantity # 5 of the new (hence 1 of the other
-#      end
-#
-#      def test_cart_modify
-#        result = Amazon::Associates.cart_modify(@create_response.cart, :items => {@create_response.cart.items[0] => 5})
-#
-#        assert_equal 1, result.cart.items.size
-#        assert_equal 5, result.cart.items.sum {|i| i.quantity }
-#        assert       result.cart.items.include?(@potter)
-#        assert_equal 5, result.cart.items.find {|i| i == @potter }.quantity
-#      end
-#
-#      def test_cart_clear
-#        result = Amazon::Associates.cart_clear(@create_response.cart)
-#
-#        assert_equal 0, result.cart.items.size
-#        assert_equal 0, result.cart.items.sum {|i| i.quantity }
-#        assert       !result.cart.items.include?(@potter)
-#      end
-#    end
-#
-#    class CartTestsFromAmazonAssociatesGem < Test::Unit::TestCase
-#      include FilesystemTestHelper
-#
-#      # create a cart to store cart_id and hmac for add, get, modify, and clear tests
-#      def setup
-#        set_valid_caching_options
-#
-#        @asin = "0672328844"
-#        resp = Amazon::Associates.cart_create(:items => {@asin => 1})
-#        @cart_id = resp.cart.id
-#        @hmac = resp.cart.hmac
-#        item = resp.cart.items.first
-#        # run tests for cart_create with default quantity while we"re at it
-#        assert resp.request.valid?
-#        assert_equal @asin, item.asin
-#        assert_equal 1, item.quantity
-#        assert_not_nil @cart_id
-#        assert_not_nil @hmac
-#      end
-#
-#      # Test cart_get
-#      def test_cart_get
-#        resp = Amazon::Associates.cart_get(:id => @cart_id, :hmac => @hmac)
-#        assert resp.request.valid?
-#        assert_not_nil resp.cart.purchase_url
-#      end
-#
+      describe ".create" do
+        context "items passed in hash form" do
+          before(:all) do
+            @cart = Cart.create(@potter => 1, @batman => 3)
+          end
+
+          it_should_behave_like "a valid cart"
+
+          it "should create a cart with those items in the quantities provided" do
+            @cart.items.index_by(&:quantity).should == {1 => @potter, 3 => @batman}
+          end
+        end
+
+        context "items passed in array form" do
+          context "with actual items" do
+            before(:all) do
+              @cart = Cart.create([@potter, @batman])
+            end
+
+            it_should_behave_like "a valid cart"
+
+            it "should create a chart with those items, implicitly 1 each" do
+              @cart.items.should =~ [@potter, @batman]
+              @cart.items.map(&:quantity).should == [1, 1]
+            end
+          end
+
+          context "with hashes containing item asins" do
+            before(:all) do
+              @items = { { :asin => "0974514055" } => 2, { :asin => "0672328844" } => 3 }
+              @cart = Cart.create(@items)
+            end
+
+            it_should_behave_like "a valid cart"
+
+            describe "#items" do
+              it "should match the passed items asins" do
+                @cart.items.map(&:asin).should =~ @items.keys.map {|item| item[:asin] }
+              end
+
+              it "should match the passed items quantities" do
+                @cart.items.map(&:quantity).should == @items.values
+              end
+            end
+          end
+
+          context "with hashes containing offer_listing_ids" do
+            before(:all) do
+              @items = { { :offer_listing_id => "MCK%2FnCXIges8tpX%2B222nOYEqeZ4AzbrFyiHuP6pFf45N3vZHTm8hFTytRF%2FLRONNkVmt182%2BmeX72n%2BbtUcGEtpLN92Oy9Y7"} => 2 }
+              @cart = Cart.create(@items)
+            end
+
+            it_should_behave_like "a valid cart"
+
+            describe "#items" do
+              it "should match the passed items asins" do
+                @cart.items.size.should == @items.size
+              end
+
+              it "should not have the offer_listing_id reflected immediately in the cart item" do
+                @cart.items.first.cart_item_id.should_not == @items.keys.first[:offer_listing_id]
+              end
+
+              it "should match the passed items quantities" do
+                @cart.items.map(&:quantity).should == @items.values
+              end
+            end
+          end
+        end
+      end
+
+      describe ".get" do
+        describe "gotten cart", :shared => true do
+          subject { @cart }
+
+          it { should == @existing_cart }
+
+          it_should_behave_like "a valid cart"
+
+          it "should have the same items as the original cart" do
+            @cart.items.should == @existing_cart.items
+          end
+        end
+
+        context "with an existing cart" do
+          before(:all) do
+            @cart = Cart.get(@existing_cart)
+          end
+
+          it_should_behave_like "gotten cart"
+        end
+
+        context "with an id and hmac" do
+          before(:all) do
+            @cart = Cart.get(:id => @existing_cart.id, :hmac => @existing_cart.hmac)
+          end
+
+          it_should_behave_like "gotten cart"
+        end
+      end
+
+      it "should have the capacity to remove existing items (short of #clear)"
 #      # Test cart_modify
 #      def test_cart_modify
 #        resp = Amazon::Associates.cart_get(:id => @cart_id, :hmac => @hmac)
@@ -120,184 +164,119 @@ end
 #        assert_not_nil resp.cart.purchase_url
 #      end
 #
-#      # Test cart_clear
-#      def test_cart_clear
-#        resp = Amazon::Associates.cart_clear(:id => @cart_id, :hmac => @hmac)
-#        assert resp.request.valid?
-#      end
-#
-#      ## Test cart_create with a specified quantity
-#      ## note this will create a separate cart
-#      def test_cart_create_with_quantity
-#        asin = "0672328844"
-#        resp = Amazon::Associates.cart_create(:items => {asin => 2})
-#        assert resp.request.valid?
-#        item = resp.cart.items.first
-#        assert_equal asin, item.asin
-#        assert_equal 2, item.quantity
-#        assert_not_nil resp.cart.id
-#        assert_not_nil resp.cart.hmac
-#      end
-#
-#      # Test cart_create with an array of hashes representing multiple items
-#      def test_cart_create_with_multiple_items
-#        items = [ { :asin => "0974514055", :quantity => 2 }, { :asin => "0672328844", :quantity => 3 } ]
-#        resp = Amazon::Associates.cart_create(:items => items)
-#        assert resp.request.valid?
-#        first_item, second_item = resp.cart.items[0], resp.cart.items[1]
-#
-#        assert_equal items[0][:asin], first_item.asin
-#        assert_equal items[0][:quantity].to_i, first_item.quantity
-#
-#        assert_equal items[1][:asin], second_item.asin
-#        assert_equal items[1][:quantity].to_i, second_item.quantity
-#
-#        assert_not_nil resp.cart.id
-#        assert_not_nil resp.cart.hmac
-#      end
-#
-#      # Test cart_create with offer_listing_id instead of asin
-#      def test_cart_create_with_offer_listing_id
-#        items = [ { :offer_listing_id => "MCK%2FnCXIges8tpX%2B222nOYEqeZ4AzbrFyiHuP6pFf45N3vZHTm8hFTytRF%2FLRONNkVmt182%2BmeX72n%2BbtUcGEtpLN92Oy9Y7", :quantity => 2 } ]
-#        resp = Amazon::Associates.cart_create(:items => items)
-#        assert resp.request.valid?
-#        first_item = resp.cart.items.first
-#
-#        assert_not_equal items[0][:offer_listing_id], first_item.cart_item_id
-#        assert_equal items[0][:quantity].to_i, first_item.quantity
-#
-#        assert_not_nil resp.cart.id
-#        assert_not_nil resp.cart.hmac
-#      end
-#    end
-#
-#    class CartTestBroughtIn < Test::Unit::TestCase
-#      include FilesystemTestHelper
-#
-#      def setup
-#        set_valid_caching_options
-#
-#        @items = %w(potter book jumper).collect do |word|
-#          Item.first(:keywords => word)
-#        end
-#      end
-#
-#      def new_cart(items = [@items[0], @items[1]])
-#        cart = Cart.create(items)
-#        assert !cart.changed?
-#        cart
-#      end
-#
-#      def test_create_with_hash
-#        items = {@items[0] => 3,
-#                 @items[1] => 2}
-#        cart = new_cart(items)
-#        assert_equal cart.items.size, items.size
-#        assert_equal 5, cart.quantity
-#        assert !cart.changed?
-#      end
-#
-#      def test_create_with_array
-#        items = [@items[0], @items[1]]
-#        cart = new_cart(items)
-#        assert_equal cart.items.size, items.size
-#        assert_equal 2, cart.quantity
-#      end
-#
-#      def test_get_returns_the_same_as_the_create_that_made_it
-#        cart = new_cart
-#        get_cart = Cart.get(:cart_id => cart.id, :hMAC => cart.hmac)
-#        assert_equal cart, get_cart
-#      end
-#
-#      def test_get_handles_natural_key_alternatives
-#        cart = new_cart
-#        get_cart = Cart.get(:id => cart.id, :hmac => cart.hmac)
-#        assert_equal cart, get_cart
-#      end
-#
-#      def test_add_has_no_effect_without_save
-#        cart = new_cart
-#        cart.add(@items[2])
-#        assert cart.changed?
-#        assert_equal 2, cart.quantity
-#        assert_equal 2, cart.items.size
-#      end
-#
-#      def test_add_increases_quantity_after_save
-#        cart = new_cart
-#        cart.add(@items[2])
-#        cart.save
-#
-#        assert_equal 3, cart.quantity
-#        assert_equal 3, cart.items.size
-#        assert !cart.changed?
-#      end
-#
-#      def test_shift_is_equivalent_to_add
-#        cart = new_cart
-#        cart << @items[2]
-#        cart.save
-#
-#        assert_equal 3, cart.quantity
-#        assert_equal 3, cart.items.size
-#        assert !cart.changed?
-#      end
-#
-#
-#      def test_modify_has_no_effect_without_save
-#        cart = new_cart
-#        cart.add(@items[1])
-#        assert cart.changed?
-#        assert_equal 2, cart.quantity
-#        assert_equal 2, cart.items.size
-#      end
-#
-#      def test_modify_increases_quantity_after_save
-#        cart = new_cart
-#        cart.add(@items[1])
-#        cart.save
-#        assert_equal 3, cart.quantity
-#        assert_equal 2, cart.items.size
-#        assert !cart.changed?
-#      end
-#
-#      def test_items_is_a_const_view
-#        cart = new_cart
-#        assert_raise(TypeError) do
-#          cart.items.clear
-#        end
-#      end
-#
-#      def test_clear_has_no_effect_without_save
-#        cart = new_cart
-#        cart.clear
-#        assert cart.changed?
-#        assert_equal 2, cart.quantity
-#        assert_equal 2, cart.items.size
-#      end
-#
-#      def test_clear_removes_items_after_save
-#        cart = new_cart
-#        cart.clear
-#        cart.save
-#
-#        assert !cart.changed?
-#        assert cart.items.empty?
-#        assert_equal 0, cart.quantity
-#      end
-#
-#      def test_cart_empty
-#        cart = new_cart
-#        assert !cart.items.empty?
-#        assert !cart.empty?
-#
-#        cart.clear
-#        cart.save
-#
-#        assert cart.items.empty?
-#        assert cart.empty?
-#      end
-#    end
-#  end
-#end
+
+      describe "#add" do
+        context "adding a new item, on save" do
+          before(:all) do
+            @number_added = 3
+            @item_added = @joker
+            @existing_cart.should_not include(@item_added)
+            @existing_cart.add(@item_added, @number_added)
+
+            @existing_cart.should have(2).items
+            lambda { @existing_cart.save }.should change(@existing_cart, :quantity).by(@number_added)
+            @existing_cart.should have(3).items
+
+            @cart = @existing_cart
+          end
+
+          it_should_behave_like "a valid cart"
+
+          it "should include the old items" do
+            @existing_cart.items.should include(*@existing_items)
+          end
+
+          it "should include the new item" do
+            @existing_cart.items.should include(@item_added)
+          end
+        end
+
+        context "adding an existing item", :shared => true do
+          context "before save" do
+            it_should_behave_like "a modified cart"
+
+            it "should be unchanged" do
+              @existing_cart.should have(2).items
+              @existing_cart.quantity.should == 4
+            end
+          end
+
+          context "on save" do
+            before(:all) do
+              lambda { @existing_cart.save }.should change {
+                @existing_cart.items.find {|item| item == @item_added }.quantity }.by(@number_added)
+
+              @cart = @existing_cart
+            end
+
+            it_should_behave_like "a valid cart"
+
+            it "should add the item in the quantity requested" do
+              @existing_cart.should have(2).items
+              @existing_cart.items.should =~ @existing_items
+            end
+          end
+        end
+
+        context "adding an existing item, on save, via add" do
+          before(:all) do
+            @number_added = 2
+            @item_added = @existing_items.first
+            @cart = @existing_cart
+            @cart.add(@item_added, @number_added)
+          end
+
+          it_should_behave_like "adding an existing item"
+        end
+
+        context "adding an existing item, on save, via add" do
+          before(:all) do
+            @number_added = 1
+            @item_added = @existing_items.first
+            @cart = @existing_cart
+            @cart << @item_added
+          end
+
+          it_should_behave_like "adding an existing item"
+        end
+      end
+
+      describe "#clear" do
+        before(:all) do
+          @existing_quantity = @existing_cart.quantity
+          @existing_quantity.should == 4
+          @existing_cart.empty?.should be_false
+          @existing_cart.clear
+          @cart = @existing_cart
+        end
+
+        context "before #save" do
+          it_should_behave_like "a modified cart"
+
+          it "should have no effect" do
+            @cart.empty?.should be_false
+            @cart.items.should =~ @existing_items
+          end
+        end
+
+        context "after #save" do
+          before(:all) do
+            @cart.should have(2).items
+
+            lambda { @cart.save }.should change {
+              @cart.quantity }.by(- @existing_quantity)
+          end
+
+          it_should_behave_like "a valid cart"
+
+          it "should remove all items" do
+            @cart.items.should == []
+            @cart.items.should be_empty
+            @cart.should be_empty
+            @cart.quantity.should == 0
+          end
+        end
+      end
+    end
+  end
+end

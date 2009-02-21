@@ -5,10 +5,10 @@ module Amazon
     class Cart < ApiResult
       xml_reader :items, :as => [CartItem], :from => 'CartItem', :in => 'CartItems', :frozen => true
       xml_reader :purchase_url, :from => 'PurchaseURL'
-      xml_reader :id, :from => 'CartId'
-      xml_reader :hmac, :from => 'HMAC'
+      xml_reader :id, :from => 'CartId', :required => true
+      xml_reader :hmac, :from => 'HMAC', :required => true
 
-      delegate :empty?, :to => :items
+      delegate :empty?, :include?, :to => :items
 
       def to_hash
         {:id => id,
@@ -43,6 +43,7 @@ module Amazon
           @hmac = cart.hmac
         end
         @changes.clear
+        self
       end
 
       def changed?
