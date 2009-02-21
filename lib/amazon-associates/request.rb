@@ -49,7 +49,8 @@ module Amazon
         cache_response(request_url, response) if cacheable?(opts['Operation'])
       end
 
-      eval(ROXML::XML::Parser.parse(response.body).root.name).from_xml(response.body, request_url)
+      doc = ROXML::XML::Parser.parse(response.body).root
+      eval(doc.name).from_xml(doc, request_url)
     end
 
     BASE_ARGS = [:aWS_access_key_id, :operation, :associate_tag, :response_group]
