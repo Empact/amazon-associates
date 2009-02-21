@@ -172,22 +172,34 @@ module Amazon
             @item_added = @joker
             @existing_cart.should_not include(@item_added)
             @existing_cart.add(@item_added, @number_added)
-
-            @existing_cart.should have(2).items
-            lambda { @existing_cart.save }.should change(@existing_cart, :quantity).by(@number_added)
-            @existing_cart.should have(3).items
-
             @cart = @existing_cart
           end
 
-          it_should_behave_like "a valid cart"
+          context "before save" do
+            it_should_behave_like "a modified cart"
 
-          it "should include the old items" do
-            @existing_cart.items.should include(*@existing_items)
+            it "should be unchanged" do
+              @existing_cart.should have(2).items
+              @existing_cart.quantity.should == 4
+            end
           end
 
-          it "should include the new item" do
-            @existing_cart.items.should include(@item_added)
+          context "on save" do
+            before(:all) do
+              @existing_cart.should have(2).items
+              lambda { @existing_cart.save }.should change(@existing_cart, :quantity).by(@number_added)
+              @existing_cart.should have(3).items
+            end
+
+            it_should_behave_like "a valid cart"
+
+            it "should include the old items" do
+              @existing_cart.items.should include(*@existing_items)
+            end
+
+            it "should include the new item" do
+              @existing_cart.items.should include(@item_added)
+            end
           end
         end
 
