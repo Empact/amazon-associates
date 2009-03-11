@@ -44,6 +44,10 @@ module Amazon
         authors.only
       end
 
+      def title
+        root_title || attr_title
+      end
+
       def inspect
         "#<#{self.class}: #{asin} #{attributes.inspect}>"
       end
@@ -121,6 +125,9 @@ module Amazon
       end
 
     private
+      xml_reader :attr_title, :from => 'Title', :in => 'ItemAttributes'
+      xml_reader :root_title, :from => 'Title'
+
       SMALL_RESPONSE_GROUPS = %w{Small ItemAttributes Images}
       DEFAULT_RESPONSE_GROUPS = SMALL_RESPONSE_GROUPS + %w{Offers VariationSummary BrowseNodes}
 
