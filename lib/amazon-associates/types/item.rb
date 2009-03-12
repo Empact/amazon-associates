@@ -26,9 +26,8 @@ module Amazon
       xml_reader :creators, :as => {:key => '@Role', :value => :content}, :in => 'ItemAttributes'
       xml_reader :authors, :as => [], :in => 'ItemAttributes'
       xml_reader :edition, :as => Ordinal, :in => 'ItemAttributes'
-      xml_reader :batteries_included?, :in => 'ItemAttributes'
       xml_reader :lowest_new_price, :as => Price, :in => 'OfferSummary'
-      xml_reader :publisher, :in => 'ItemAttributes'
+      xml_reader :publisher, :studio, :batteries_included?, :in => 'ItemAttributes'
 
       xml_reader :editorial_reviews, :as => [EditorialReview]
       xml_reader :customer_reviews, :as => [CustomerReview]
