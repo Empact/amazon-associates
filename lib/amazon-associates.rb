@@ -55,7 +55,8 @@ module Amazon
       'WirelessAccessories' => %w[psrank salesrank titlerank -titlerank]
     }.freeze
 
-    SEARCH_INDEXES = SORT_TYPES.keys.sort.freeze
+    SEARCH_INDEXES = (SORT_TYPES.keys + %w(Blended)).freeze
+    DEFAULT_SEARCH_INDEX = 'Blended'
 
     class << self
       def configure(&proc)
