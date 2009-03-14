@@ -7,7 +7,7 @@ module Amazon
 
       xml_reader :asin, :from => 'ASIN'
       xml_reader :detail_page_url
-      xml_reader :list_price, :as => Price, :from => 'ListPrice', :in => 'ItemAttributes'
+      xml_reader :list_price, :as => Price, :in => 'ItemAttributes'
       xml_reader :attributes, :as => {:key => :name,
                                       :value => :content}, :in => 'ItemAttributes'
       xml_reader :small_image, :as => Image
@@ -27,7 +27,7 @@ module Amazon
       xml_reader :authors, :as => [], :in => 'ItemAttributes'
       xml_reader :edition, :as => Ordinal, :in => 'ItemAttributes'
       xml_reader :lowest_new_price, :as => Price, :in => 'OfferSummary'
-      xml_reader :publisher, :studio, :batteries_included?, :in => 'ItemAttributes'
+      xml_reader :publisher, :studio, :batteries_included?, :label, :brand, :in => 'ItemAttributes'
 
       xml_reader :editorial_reviews, :as => [EditorialReview]
       xml_reader :customer_reviews, :as => [CustomerReview]
@@ -43,6 +43,8 @@ module Amazon
       def author
         authors.only
       end
+
+      alias_method :offer_price, :lowest_new_price
 
       def title
         root_title || attr_title
