@@ -84,9 +84,10 @@ module Amazon
         Amazon::Associates.item_lookup(:item_id => items * ',', :response_group => SMALL_RESPONSE_GROUPS).items
       end
 
-      def self.similar(opts)
+      def self.similar(*ids)
+        opts = ids.extract_options!
         opts.reverse_merge!(:response_group => SMALL_RESPONSE_GROUPS)
-        Amazon::Associates.similarity_lookup(opts.delete(:item_id), opts).items
+        Amazon::Associates.similarity_lookup(ids, opts).items
       end
 
       def self.top_sellers(opts)
@@ -124,6 +125,10 @@ module Amazon
       def self.one(opts)
         prep_responses(opts)
         Amazon::Associates.item_lookup(opts.delete(:item_id), opts).items.first
+      end
+
+      def similar
+        Item.similar(asin)
       end
 
     private
