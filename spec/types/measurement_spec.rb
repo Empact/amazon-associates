@@ -1,4 +1,4 @@
-require 'amazon-associates'
+require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe "measurement object", :shared => true do
   it "should take a quantity and units" do
