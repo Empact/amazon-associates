@@ -100,8 +100,9 @@ module Amazon
     end
 
     def self.prepare_url(opts)
-      raise opts.to_options.inspect if opts.to_options.keys.include?(:cart)
-      opts.to_options.assert_valid_keys(*valid_arguments(opts[:operation]))
+      opts.to_options!
+      raise opts.inspect if opts.has_key?(:cart)
+      opts.assert_valid_keys(*valid_arguments(opts[:operation]))
       opts.merge!(:service => 'AWSECommerceService')
 
       params = opts.each_pair do |k, v|
@@ -111,7 +112,7 @@ module Amazon
         params
       end
 
-      "http://webservices.amazon.#{tld(opts.delete(:country))}/onca/xml?" + params.to_query
+      "http://webservices.amazon.#{tld(opts.delete("Country"))}/onca/xml?" + params.to_query
     end
 
     def self.cacheable?(operation)

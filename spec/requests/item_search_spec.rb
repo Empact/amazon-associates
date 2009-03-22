@@ -16,6 +16,12 @@ module Amazon
         end
       end
 
+      context "when the country is not recognized" do
+        it "should fail" do
+          proc { Amazon::Associates.item_search('ruby', :country => :asfdkjjk) }.should raise_error(Amazon::Associates::RequestError)
+        end
+      end
+
       context "on valid request" do
         before(:all) do
           @response = Amazon::Associates.item_search("ruby", :item_page => 2)

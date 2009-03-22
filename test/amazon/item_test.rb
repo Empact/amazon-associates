@@ -62,12 +62,6 @@ module Amazon
         assert resp.request.valid?
       end
 
-      def test_item_search_fake_country_should_throw
-        assert_raise Amazon::Associates::RequestError do
-          Amazon::Associates.item_search('ruby', :country => :asfdkjjk)
-        end
-      end
-
       def test_item_search_by_author
         resp = Amazon::Associates.item_search('dave', :type => :author)
         assert resp.request.valid?
