@@ -55,8 +55,6 @@ module Amazon
       end
 
       PER_PAGE = 10
-      MAX_PAGE = 400
-      MAX_COUNT = MAX_PAGE * PER_PAGE
 
       def self.find(scope, opts = {})
         opts = opts.dup # it seems this hash picks up some internal amazon stuff if we don't copy it
@@ -116,8 +114,7 @@ module Amazon
         response = Amazon::Associates.item_search(opts)
 
         # TODO: Max count is different for different indexes, for example, All only returns 5 pages
-        max_count = [response.total_results, MAX_COUNT].min
-        WillPaginate::Collection.create(response.current_page, PER_PAGE, max_count) do |pager|
+        WillPaginate::Collection.create(response.current_page, PER_PAGE, response.total_results) do |pager|
           # TODO: Some of the returned items may not include offers, we may need something like this:
           #.reject {|i| i.offers[:totaloffers] == '0' }
           pager.replace response.items
