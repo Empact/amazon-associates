@@ -93,12 +93,10 @@ module Amazon
         'jp' => 'co.jp',
         'fr' => 'fr'
     )
-    def self.request_url(country)
-      tld = TLDS.fetch(country || 'us') do
+    def self.tld(country)
+      TLDS.fetch(country || 'us') do
         raise RequestError, "Invalid country '#{country}'"
       end
-
-      "http://webservices.amazon.#{tld}/onca/xml?"
     end
 
     def self.prepare_url(opts)
@@ -106,10 +104,14 @@ module Amazon
       opts.to_options.assert_valid_keys(*valid_arguments(opts[:operation]))
       opts.merge!(:service => 'AWSECommerceService')
 
-      request_url(opts.delete(:country)) + opts.each_pair! do |k, v|
+      params = opts.each_pair do |k, v|
+        opts.delete(k)
         v *= ',' if v.is_a? Array
-        [k.to_s.camelize, v]
-      end.to_query
+        opts[k.to_s.camelize] = v
+        params
+      end
+
+      "http://webservices.amazon.#{tld(opts.delete(:country))}/onca/xml?" + params.to_query
     end
 
     def self.cacheable?(operation)

@@ -23,14 +23,6 @@ class Float
 end
 
 class Hash
-  def each_pair!(&block)
-    each_key do |key|
-      val = delete(key)
-      new_key, new_val = yield key, val
-      store(new_key, new_val)
-    end
-  end
-  
   def rekey!(keys)
     keys.each_pair do |old, new|
       store(new, delete(old)) if has_key?(old)    
