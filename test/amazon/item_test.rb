@@ -195,21 +195,15 @@ module Amazon
       ## Test item_search
       def test_item_search
         resp = Amazon::Associates.item_search("ruby")
-        assert(resp.request.valid?)
+        assert(resp.request.valid?, resp.inspect)
         assert(resp.total_results >= 3600)
         assert(resp.total_pages >= 360)
       end
 
       def test_item_search_with_paging
         resp = Amazon::Associates.item_search("ruby", :item_page => 2)
-        assert resp.request.valid?
+        assert resp.request.valid?, resp.inspect
         assert 2, resp.current_page
-      end
-
-      def test_item_search_with_invalid_request
-        assert_raise(Amazon::Associates::RequiredParameterMissing) do
-          Amazon::Associates.item_search(nil)
-        end
       end
 
       def test_item_search_with_no_result

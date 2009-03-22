@@ -2,7 +2,8 @@ module Amazon
   module Associates
     class CartResponse < Response
       xml_reader :cart, :as => Cart, :required => true
-      xml_reader :request, :as => CartRequest, :in => 'Cart'
+      xml_reader :request, :as => Request, :in => 'Cart'
+      xml_reader :query_request, :as => CartRequest, :in => 'Cart/Request'
     end
 
     class CartCreateResponse < CartResponse

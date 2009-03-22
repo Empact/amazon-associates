@@ -1,7 +1,7 @@
 module Amazon
   module Associates
     class Request < ApiResult
-      xml_reader :valid?, :from => 'IsValid'
+      xml_reader :valid?, :from => 'IsValid', :required => true
       xml_reader :errors, :as => [Error] do |errors|
         errors.collect do |error|
           if error.code && !IGNORE_ERRORS.include?(error.code)
@@ -21,23 +21,25 @@ module Amazon
       end
     end
 
-    class ItemSearchRequest < Request
-      xml_reader :current_page, :from => 'ItemPage', :in => 'ItemSearchRequest', :as => Integer, :else => 1
+    class ItemSearchRequest < ApiResult
+      xml_name 'ItemSearchRequest'
+
+      xml_reader :current_page, :from => 'ItemPage', :as => Integer, :else => 1
     end
 
-    class ItemLookupRequest < Request
+    class ItemLookupRequest < ApiResult
     end
 
-    class BrowseNodeLookupRequest < Request
+    class BrowseNodeLookupRequest < ApiResult
       xml_reader :response_groups, :as => [], :in => 'BrowseNodeLookupRequest'
     end
 
-    class CartRequest < Request
+    class CartRequest < ApiResult
     end
 
-    class OperationRequest < Request
+    class OperationRequest < ApiResult
       xml_name 'OperationRequest'
-      
+
       xml_reader :request_id
       xml_reader :arguments, :as => {:key => '@Name', :value => '@Value'}
       xml_reader :request_processing_time

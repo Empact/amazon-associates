@@ -1,19 +1,20 @@
 module Amazon
   module Associates
-    class ItemSearchResponse < Response
-      xml_name 'ItemSearchResponse'
-
+    class SearchResponse < Response
       attr_accessor :url # TODO would be just a reader if we can figure out xml construction better
-      xml_reader :request, :as => OperationRequest, :required => true
-      xml_reader :search_request, :as => ItemSearchRequest, :from => 'Request', :in => 'Items'
+      xml_reader :operation_request, :as => OperationRequest, :required => true
+      xml_reader :request, :as => Request, :in => 'Items'
+      delegate :current_page, :to => :request_query
 
       xml_reader :items, :as => [Item]
       xml_reader :total_results, :in => 'Items', :as => Integer
       xml_reader :total_pages, :in => 'Items', :as => Integer
+    end
 
-      def current_page
-        search_request.current_page
-      end
+    class ItemSearchResponse < SearchResponse
+      xml_name 'ItemSearchResponse'
+
+      xml_reader :request_query, :as => ItemSearchRequest, :in => 'Items/Request', :required => true
     end
   end
 end

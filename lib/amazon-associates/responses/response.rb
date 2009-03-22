@@ -2,10 +2,9 @@ module Amazon
   module Associates
     class Response < ApiResult
       attr_reader :url
-      delegate :errors, :to => :request
 
-      def current_page
-        request.current_page
+      def errors
+        request.errors
       end
 
       def initialize(url)
