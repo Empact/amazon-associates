@@ -31,7 +31,9 @@ module Amazon
     end
 
     class BrowseNodeLookupRequest < ApiResult
-      xml_reader :response_groups, :as => [], :in => 'BrowseNodeLookupRequest'
+      xml_name 'BrowseNodeLookupRequest'
+
+      xml_reader :response_groups, :as => []
     end
 
     class CartRequest < ApiResult

@@ -2,13 +2,6 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 module Amazon
   module Associates
-    describe "Amazon Associates response", :shared => true do
-      describe "request" do
-        subject { @response.request }
-        it { should be_valid }
-      end
-    end
-
     describe ".item_search" do
       context "when omitting required parameters" do
         it "should fail" do

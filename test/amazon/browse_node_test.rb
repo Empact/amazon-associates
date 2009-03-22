@@ -7,26 +7,6 @@ class Amazon::Associates::BrowseNodeLookupTest < Test::Unit::TestCase
     set_valid_caching_options
   end
 
-  ## Test browse_node_lookup
-  def test_browse_node_lookup
-    resp = Amazon::Associates.browse_node_lookup("5", :response_group => "TopSellers")
-    assert resp.request.valid?
-    assert_equal "5", resp.browse_nodes.first.id
-    assert_equal "TopSellers", resp.request.response_groups.first
-  end
-
-  def test_browse_node_lookup_with_browse_node_info_response
-    resp = Amazon::Associates.browse_node_lookup("5", :response_group => "BrowseNodeInfo")
-    assert resp.request.valid?
-    assert_equal "BrowseNodeInfo", resp.request.response_groups.first
-  end
-
-  def test_browse_node_lookup_with_new_releases_response
-    resp = Amazon::Associates.browse_node_lookup("5", :response_group => "NewReleases")
-    assert resp.request.valid?
-    assert_equal "NewReleases", resp.request.response_groups.first
-  end
-
   def test_browse_node_lookup_with_invalid_request
     assert_raise(Amazon::Associates::RequiredParameterMissing) do
       Amazon::Associates.browse_node_lookup(nil)
