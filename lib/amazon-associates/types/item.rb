@@ -78,6 +78,7 @@ module Amazon
       end
 
       def self.top_sellers(opts)
+        opts = opts.dup.to_options!
         opts.merge!(:response_group => 'TopSellers')
         opts[:browse_node_id] = opts.delete(:browse_node).id if opts[:browse_node]
         items = Amazon::Associates.browse_node_lookup(opts).top_sellers.map {|i| i.text_at('asin') }
@@ -91,6 +92,7 @@ module Amazon
       end
 
       def self.top_sellers(opts)
+        opts = opts.dup.to_options!
         opts.merge!(:response_group => 'TopSellers')
         opts[:browse_node_id] = opts.delete(:browse_node).id if opts[:browse_node]
         items = Amazon::Associates.browse_node_lookup(opts).browse_nodes.map(&:top_sellers).flatten.map(&:asin)
@@ -102,7 +104,7 @@ module Amazon
       end
 
       def self.all(opts)
-        opts = opts.dup
+        opts = opts.dup.to_options!
         unless %w[All Blended Merchants].include? opts[:search_index]
           opts.reverse_merge!(:merchant_id => 'Amazon',
                               :condition => 'All')

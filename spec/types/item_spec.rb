@@ -12,27 +12,39 @@ module Amazon
         @item.should == Struct.new(:asin).new(asin)
       end
 
-      describe "query for similar items", :shared => true do
-        it "should return similar items" do
-          @similar.should be_an_instance_of(Array)
-          @similar.each {|item| item.should be_an_instance_of(Item) }
-          @similar.should_not include(@item)
-          @similar.should have_at_least(10).items
+      describe "query for items", :shared => true do
+        it "should return a list of items" do
+          @result.should have_at_least(10).items
+          @result.each {|item| item.should be_an_instance_of(Item) }
+        end
+      end
+
+      describe "query for related items", :shared => true do
+        it_should_behave_like "query for items"
+        it "should not include the item related to the result" do
+          @result.should_not include(@item)
         end
       end
 
       describe ".similar" do
         before(:all) do
-          @similar = Item.similar(@item.asin)
+          @result = Item.similar(@item.asin)
         end
-        it_should_behave_like "query for similar items"
+        it_should_behave_like "query for related items"
+      end
+
+      describe ".all" do
+        before(:all) do
+          @result = Item.all("search_index"=>"Blended", "keywords"=>"potter")
+        end
+        it_should_behave_like "query for items"
       end
 
       describe "#similar" do
         before(:all) do
-          @similar = @item.similar
+          @result = @item.similar
         end
-        it_should_behave_like "query for similar items"
+        it_should_behave_like "query for related items"
       end
     end
   end
