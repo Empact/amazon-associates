@@ -22,8 +22,7 @@ module Amazon
     end
 
     class ItemSearchRequest < Request
-      xml_reader :current_page, :from => 'ItemPage', :in => 'ItemSearchRequest',
-                 :as => Integer, :else => 1
+      xml_reader :current_page, :from => 'ItemPage', :in => 'ItemSearchRequest', :as => Integer, :else => 1
     end
 
     class ItemLookupRequest < Request
@@ -34,6 +33,14 @@ module Amazon
     end
 
     class CartRequest < Request
+    end
+
+    class OperationRequest < Request
+      xml_name 'OperationRequest'
+      
+      xml_reader :request_id
+      xml_reader :arguments, :as => {:key => '@Name', :value => '@Value'}
+      xml_reader :request_processing_time
     end
   end
 end
