@@ -38,6 +38,10 @@ module Amazon
           @result = Item.all("search_index"=>"Blended", "keywords"=>"potter")
         end
         it_should_behave_like "query for items"
+
+        it "should handle hashes with indifferent access" do
+          Item.all(HashWithIndifferentAccess.new("search_index"=>"Blended", "keywords"=>"hello")).should_not == nil
+        end
       end
 
       describe "#similar" do

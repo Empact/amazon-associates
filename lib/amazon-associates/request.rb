@@ -100,7 +100,7 @@ module Amazon
     end
 
     def self.prepare_url(opts)
-      opts = opts.to_options!
+      opts = opts.to_hash.to_options!
       raise opts.inspect if opts.has_key?(:cart)
       opts.assert_valid_keys(*valid_arguments(opts[:operation]))
       opts.merge!(:service => 'AWSECommerceService')
