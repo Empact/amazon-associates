@@ -32,7 +32,8 @@ describe Amazon::Associates::Measurement do
   describe "#from_xml" do
     def measurement_with(opts)
       doc = ROXML::XML::Document.new
-      doc.root = ROXML::XML::Node.new('width', opts[:value].to_s)
+      doc.root = ROXML::XML::Node.new('width', doc)
+      doc.root.add_child( Nokogiri::XML::Text.new(opts[:value].to_s, doc))
       doc.root['Units'] = opts[:units] unless opts[:units].blank?
       Amazon::Associates::Measurement.from_xml(doc.root)
     end
