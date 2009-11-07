@@ -1,3 +1,7 @@
+0.6.0 (?)
+----------------
+* Add signing as per the new amazon security requirements
+
 0.5.3 2007-09-12
 ----------------
 * send_request to use default options.

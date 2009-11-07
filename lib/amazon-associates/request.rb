@@ -5,6 +5,10 @@
 end
 
 require 'net/http'
+require 'cgi'
+require 'hmac'
+require 'hmac-sha2'
+require 'base64'
 
 module Amazon
   module Associates
@@ -103,16 +107,25 @@ module Amazon
       opts = opts.to_hash.to_options!
       raise opts.inspect if opts.has_key?(:cart)
       opts.assert_valid_keys(*valid_arguments(opts[:operation]))
-      opts.merge!(:service => 'AWSECommerceService')
 
       params = opts.each_pair do |k, v|
         opts.delete(k)
         v *= ',' if v.is_a? Array
-        opts[k.to_s.camelize] = v
+        opts[k.to_s.camelize] = v.to_s
         params
       end
 
-      "http://webservices.amazon.#{tld(opts.delete("Country"))}/onca/xml?" + params.to_query
+      params.merge!(
+        'Service' => 'AWSECommerceService',
+        'Timestamp' => Time.now.gmtime.iso8601,
+        'SignatureVersion' => '2',
+        'SignatureMethod' => "HmacSHA256"
+      )
+
+      unsigned_uri = URI.parse("http://webservices.amazon.#{tld(opts.delete("Country"))}/onca/xml?#{params.sort { |a, b| a[0] <=> b[0] }.map { |key, val| "#{key}=#{CGI::escape(val).gsub('+', '%20')}" }.join("&")}")
+      hmac = HMAC::SHA256.new(ENV['AMAZON_SECRET_ACCESS_KEY'])
+      hmac.update("GET\n#{unsigned_uri.host}\n#{unsigned_uri.path}\n#{unsigned_uri.query}")
+      "#{unsigned_uri}&Signature=#{CGI::escape(Base64.encode64(hmac.digest).chomp)}"
     end
 
     def self.cacheable?(operation)
