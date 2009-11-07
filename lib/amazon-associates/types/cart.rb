@@ -3,10 +3,10 @@ require 'roxml'
 module Amazon
   module Associates
     class Cart < ApiResult
-      xml_reader :items, :as => [CartItem], :from => 'CartItem', :in => 'CartItems', :frozen => true
-      xml_reader :purchase_url, :from => 'PurchaseURL'
-      xml_reader :id, :from => 'CartId', :required => true
-      xml_reader :hmac, :from => 'HMAC', :required => true
+      xml_reader :items, :as => [CartItem], :from => 'xmlns:CartItem', :in => 'xmlns:CartItems', :frozen => true
+      xml_reader :purchase_url, :from => 'xmlns:PurchaseURL'
+      xml_reader :id, :from => 'xmlns:CartId', :required => true
+      xml_reader :hmac, :from => 'xmlns:HMAC', :required => true
 
       delegate :empty?, :include?, :to => :items
 

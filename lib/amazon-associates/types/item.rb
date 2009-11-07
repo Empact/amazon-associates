@@ -7,9 +7,9 @@ module Amazon
 
       xml_reader :asin, :from => 'ASIN'
       xml_reader :detail_page_url
-      xml_reader :list_price, :as => Price, :in => 'ItemAttributes'
+      xml_reader :list_price, :as => Price, :in => 'xmlns:ItemAttributes'
       xml_reader :attributes, :as => {:key => :name,
-                                      :value => :content}, :in => 'ItemAttributes'
+                                      :value => :content}, :in => 'xmlns:ItemAttributes'
       xml_reader :small_image, :as => Image
       xml_reader :medium_image, :as => Image
       #TODO: would be nice to have :key => '@category' and :value => {[Image] => 'SwatchImage'}
@@ -20,15 +20,15 @@ module Amazon
       xml_reader :browse_nodes, :as => [BrowseNode]
       xml_reader :offers, :as => [Offer]
       # TODO: This should be offers.total_new
-      xml_reader :total_new_offers, :from => 'TotalNew', :in => 'OfferSummary', :as => Integer
+      xml_reader :total_new_offers, :from => 'TotalNew', :in => 'xmlns:OfferSummary', :as => Integer
       # TODO: This should be offers.total
-      xml_reader :total_offers, :in => 'Offers', :as => Integer
+      xml_reader :total_offers, :in => 'xmlns:Offers', :as => Integer
 
-      xml_reader :creators, :as => {:key => '@Role', :value => :content}, :in => 'ItemAttributes'
-      xml_reader :authors, :as => [], :in => 'ItemAttributes'
-      xml_reader :edition, :as => Ordinal, :in => 'ItemAttributes'
-      xml_reader :lowest_new_price, :as => Price, :in => 'OfferSummary'
-      xml_reader :publisher, :studio, :batteries_included?, :label, :brand, :in => 'ItemAttributes'
+      xml_reader :creators, :as => {:key => '@Role', :value => :content}, :in => 'xmlns:ItemAttributes'
+      xml_reader :authors, :as => [], :in => 'xmlns:ItemAttributes'
+      xml_reader :edition, :as => Ordinal, :in => 'xmlns:ItemAttributes'
+      xml_reader :lowest_new_price, :as => Price, :in => 'xmlns:OfferSummary'
+      xml_reader :publisher, :studio, :batteries_included?, :label, :brand, :in => 'xmlns:ItemAttributes'
 
       xml_reader :editorial_reviews, :as => [EditorialReview]
       xml_reader :customer_reviews, :as => [CustomerReview]
@@ -132,8 +132,8 @@ module Amazon
       end
 
     private
-      xml_reader :attr_title, :from => 'Title', :in => 'ItemAttributes'
-      xml_reader :root_title, :from => 'Title'
+      xml_reader :attr_title, :from => 'xmlns:Title', :in => 'xmlns:ItemAttributes'
+      xml_reader :root_title, :from => 'xmlns:Title'
 
       SMALL_RESPONSE_GROUPS = %w{Small ItemAttributes Images}
       DEFAULT_RESPONSE_GROUPS = SMALL_RESPONSE_GROUPS + %w{Offers VariationSummary BrowseNodes}
