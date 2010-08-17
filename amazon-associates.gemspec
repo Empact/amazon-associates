@@ -94,12 +94,14 @@ Gem::Specification.new do |s|
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<roxml>, [">= 3.1.3"])
       s.add_runtime_dependency(%q<activesupport>, [">= 2.3.4"])
+      s.add_runtime_dependency(%q<ruby-hmac>, [">= 0"])
       s.add_runtime_dependency(%q<will_paginate>, [">= 0"])
       s.add_development_dependency(%q<thoughtbot-shoulda>, [">= 0"])
       s.add_development_dependency(%q<mocha>, [">= 0"])
     else
       s.add_dependency(%q<roxml>, [">= 3.1.3"])
       s.add_dependency(%q<activesupport>, [">= 2.3.4"])
+      s.add_dependency(%q<ruby-hmac>, [">= 0"])
       s.add_dependency(%q<will_paginate>, [">= 0"])
       s.add_dependency(%q<thoughtbot-shoulda>, [">= 0"])
       s.add_dependency(%q<mocha>, [">= 0"])
@@ -107,6 +109,7 @@ Gem::Specification.new do |s|
   else
     s.add_dependency(%q<roxml>, [">= 3.1.3"])
     s.add_dependency(%q<activesupport>, [">= 2.3.4"])
+    s.add_dependency(%q<ruby-hmac>, [">= 0"])
     s.add_dependency(%q<will_paginate>, [">= 0"])
     s.add_dependency(%q<thoughtbot-shoulda>, [">= 0"])
     s.add_dependency(%q<mocha>, [">= 0"])
