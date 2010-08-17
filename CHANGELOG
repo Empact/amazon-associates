@@ -1,3 +1,7 @@
+0.6.3 2010-08-16
+----------------
+* Update gem dependencies
+
 0.6.0 (?)
 ----------------
 * Add signing as per the new amazon security requirements
