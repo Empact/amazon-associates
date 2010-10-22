@@ -53,7 +53,7 @@ module Amazon
         cache_response(request_url, response) if cacheable?(opts['Operation'])
       end
 
-      doc = ROXML::XML::Parser.parse(response.body).root
+      doc = ROXML::XML::Node.from(response.body)
       eval(doc.name).from_xml(doc, request_url)
     end
 
