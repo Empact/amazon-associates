@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'active_support'
+require 'active_support/core_ext/enumerable'
 
 class Object # http://whytheluckystiff.net/articles/seeingMetaclassesClearly.html
   def meta_def name, &blk
