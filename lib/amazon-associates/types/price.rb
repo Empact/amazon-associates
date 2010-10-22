@@ -10,7 +10,7 @@ module Amazon
 
       def initialize(str = nil, cents = nil, currency = nil)
         @to_s = str.to_s
-        @cents = Integer(cents)
+        @cents = cents ? Integer(cents) : 0
         @currency = currency.to_s
       end
 
