@@ -8,12 +8,13 @@ Jeweler::Tasks.new do |s|
   s.homepage = "http://github.com/Empact/amazon-associates"
   s.description = "amazon-associates offers object-oriented access to the Amazon Associates API, built on ROXML"
   s.authors = ["Ben Woosley", "Dan Pickett", "Herryanto Siatono"]
-  s.add_runtime_dependency("roxml", ">= 3.1.3")
+  s.add_runtime_dependency("roxml", ">= 3.1.6")
   s.add_runtime_dependency("activesupport", ">= 2.3.4")
   s.add_runtime_dependency("ruby-hmac")
   s.add_runtime_dependency("will_paginate")
   s.add_development_dependency("thoughtbot-shoulda")
   s.add_development_dependency("mocha")
+  s.add_development_dependency("rspec", ">= 2.0.0")
 
   # s.require_path = "lib"
   # s.autorequire = "amazon-associates"
