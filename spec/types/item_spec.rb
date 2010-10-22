@@ -12,14 +12,14 @@ module Amazon
         @item.should == Struct.new(:asin).new(asin)
       end
 
-      describe "query for items", :shared => true do
+      shared_examples_for "query for items" do
         it "should return a list of items" do
           @result.should have_at_least(10).items
           @result.each {|item| item.should be_an_instance_of(Item) }
         end
       end
 
-      describe "query for related items", :shared => true do
+      shared_examples_for "query for related items" do
         it_should_behave_like "query for items"
         it "should not include the item related to the result" do
           @result.should_not include(@item)

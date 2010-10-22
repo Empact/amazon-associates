@@ -12,7 +12,7 @@ module Amazon
         @existing_cart = Cart.create(@potter => 1, @batman => 3)
       end
 
-      describe "a cart", :shared => true do
+      shared_examples_for "a cart" do
         it "should have a valid purchase_url" do
           @cart.purchase_url.should_not be_blank
         end
@@ -33,7 +33,7 @@ module Amazon
         end
       end
 
-      describe "a valid cart", :shared => true do
+      shared_examples_for "a valid cart" do
         it_should_behave_like "a cart"
 
         it "should be in a valid state" do
@@ -41,7 +41,7 @@ module Amazon
         end
       end
 
-      describe "a modified cart", :shared => true do
+      shared_examples_for "a modified cart" do
         it_should_behave_like "a cart"
 
         it "should be in a valid state" do
@@ -121,7 +121,7 @@ module Amazon
       end
 
       describe ".get" do
-        describe "gotten cart", :shared => true do
+        shared_examples_for "gotten cart" do
           subject { @cart }
 
           it { should == @existing_cart }
@@ -203,7 +203,7 @@ module Amazon
           end
         end
 
-        context "adding an existing item", :shared => true do
+        shared_examples_for "adding an existing item" do
           context "before save" do
             it_should_behave_like "a modified cart"
 

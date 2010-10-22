@@ -1,6 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe "measurement object", :shared => true do
+shared_examples_for "measurement object" do
   it "should take a quantity and units" do
     m = measurement_with(:value => 11.3, :units => 'inches')
     m.value.should == 11.3
