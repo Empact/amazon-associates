@@ -8,12 +8,11 @@ class Object # http://whytheluckystiff.net/articles/seeingMetaclassesClearly.htm
 end
 
 class OpenHash < Hash
-  def method_missing_with_attributes_query(meth, *args)
+  def method_missing(meth, *args)
     fetch(meth) do
-      method_missing_without_attributes_query(meth)
+      super
     end
   end
-  alias_method_chain :method_missing, :attributes_query  
 end
 
 class Float
