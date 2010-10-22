@@ -1,6 +1,6 @@
-require "lib/amazon-associates"
+require File.join(File.dirname(__FILE__), "../lib/amazon-associates")
 
-describe "Amazon Associates response", :shared => true do
+shared_examples_for "Amazon Associates response" do
   describe "request" do
     subject { @response.request }
     it { should be_valid }

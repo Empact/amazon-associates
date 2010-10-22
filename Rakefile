@@ -39,16 +39,17 @@ Rake::TestTask.new(:test) do |t|
   t.verbose = true
 end
 
-require 'spec/rake/spectask'
-Spec::Rake::SpecTask.new(:spec) do |t|
-  t.libs << 'lib' << 'spec'
-  t.spec_opts << '--format profile --backtrace'
-  t.spec_files = FileList['spec/**/*_spec.rb']
+require 'rspec/core/rake_task'
+RSpec::Core::RakeTask.new(:spec) do |t|
+  t.ruby_opts = '-Ilib -Ispec'
+  t.rspec_opts = '--backtrace'
+  # t.spec_files = FileList['spec/**/*_spec.rb']
 end
 
-Spec::Rake::SpecTask.new(:rcov) do |t|
-  t.libs << 'lib' << 'spec'
-  t.spec_files = FileList['spec/**/*_spec.rb']
+RSpec::Core::RakeTask.new(:rcov) do |t|
+  t.ruby_opts = '-Ilib -Ispec'
+  t.rspec_opts = '--backtrace'
+  # t.spec_files = FileList['spec/**/*_spec.rb']
   t.rcov = true
 end
 
