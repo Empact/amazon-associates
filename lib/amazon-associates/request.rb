@@ -108,12 +108,10 @@ module Amazon
       raise opts.inspect if opts.has_key?(:cart)
       opts.assert_valid_keys(*valid_arguments(opts[:operation]))
 
-      params = opts.each_pair do |k, v|
-        opts.delete(k)
+      params = Hash[opts.map do |(k, v)|
         v *= ',' if v.is_a? Array
-        opts[k.to_s.camelize] = v.to_s
-        params
-      end
+        [k.to_s.camelize, v.to_s]
+      end]
 
       params.merge!(
         'Service' => 'AWSECommerceService',
