@@ -14,7 +14,7 @@ module Amazon
       def to_s
         @value.ordinalize
       end
-      alias_attribute :inspect, :to_s
+      alias :inspect :to_s
 
       def ==(other)
         @value == other

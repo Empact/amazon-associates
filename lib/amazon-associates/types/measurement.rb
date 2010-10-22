@@ -18,7 +18,7 @@ module Amazon
         units = @value == 1 ? @units.singularize : @units
         [value, units].join(' ')
       end
-      alias_attribute :inspect, :to_s
+      alias :inspect :to_s
 
       def to_i
         @value.round
