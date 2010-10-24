@@ -3,6 +3,14 @@ require_relative '../test_helper'
 
 module Amazon
   module Associates
+    class ItemActiveModelTest < Test::Unit::TestCase
+      include ActiveModel::Lint::Tests
+
+      def setup
+        @model = Amazon::Associates.item_search('ruby').items.first
+      end
+    end
+    
     class ItemTest < Test::Unit::TestCase
       include FilesystemTestHelper
       

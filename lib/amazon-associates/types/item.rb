@@ -33,6 +33,16 @@ module Amazon
       xml_reader :editorial_reviews, :as => [EditorialReview]
       xml_reader :customer_reviews, :as => [CustomerReview]
 
+      alias_method :id, :asin
+
+      extend ActiveModel::Naming
+      include ActiveModel::Conversion
+      include ActiveModel::Validations
+
+      def persisted?
+        true
+      end
+
       def ==(other)
         asin == other.asin
       end
