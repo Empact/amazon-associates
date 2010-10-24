@@ -41,7 +41,7 @@ module Amazon
       def test_item_search_with_paging
         resp = Amazon::Associates.item_search('ruby', :item_page => 2)
         assert resp.request.valid?
-        assert 2, resp.current_page
+        assert_equal 2, resp.current_page
       end
 
       def test_item_search_with_response_group_array
@@ -182,7 +182,7 @@ module Amazon
 
         assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition", item.attributes['Title']
         assert item.authors.is_a?(Array)
-        assert 3, item.authors.size
+        assert_equal 3, item.authors.size
         assert_equal "Dave Thomas", item.authors.first
       end
     end
@@ -206,7 +206,7 @@ module Amazon
       def test_item_search_with_paging
         resp = Amazon::Associates.item_search("ruby", :item_page => 2)
         assert resp.request.valid?, resp.inspect
-        assert 2, resp.current_page
+        assert_equal 2, resp.current_page
       end
 
       def test_item_search_with_no_result
@@ -270,7 +270,7 @@ module Amazon
 
         assert_equal "Programming Ruby: The Pragmatic Programmers' Guide, Second Edition", title
         assert authors.is_a?(Array)
-        assert 3, authors.size
+        assert_equal 3, authors.size
         assert_equal "Dave Thomas", authors.first
       end
     end
