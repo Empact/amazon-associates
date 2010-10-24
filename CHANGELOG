@@ -1,7 +1,8 @@
-0.7.0 2010-10-23
+0.7.0 pending
 ----------------
 * Update to ruby 1.9 compatibility
 * Update to rspec 2
+* Make Item an ActiveModel object
 
 0.6.3 2010-08-16
 ----------------
