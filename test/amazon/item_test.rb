@@ -1,4 +1,5 @@
-require File.join(File.dirname(__FILE__), '../test_helper')
+# encoding: utf-8
+require_relative '../test_helper'
 
 module Amazon
   module Associates
