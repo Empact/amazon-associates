@@ -84,7 +84,7 @@ class FilesystemCacheTest < Test::Unit::TestCase
     should "create a file in the cache path with the response inside it" do
       open(File.join(CACHE_TEST_PATH + @filename[0..2], @filename)) do |f|
         response = Marshal.load(f)
-        equivalent = eval(ROXML::XML::Parser.parse(response.body).root.name).from_xml(response.body, @resp.url)
+        equivalent = eval(ROXML::XML::Node.from(response.body).name).from_xml(response.body, @resp.url)
 
         assert_equal @resp, equivalent
       end
