@@ -6,7 +6,7 @@ module Amazon
       xml_name 'Item'
 
       xml_reader :asin, :from => 'ASIN'
-      xml_reader :detail_page_url
+      xml_reader :detail_page_url, :from => 'DetailPageURL'
       xml_reader :list_price, :as => Price, :in => 'xmlns:ItemAttributes'
       xml_reader :attributes, :as => {:key => :name,
                                       :value => :content}, :in => 'xmlns:ItemAttributes'
