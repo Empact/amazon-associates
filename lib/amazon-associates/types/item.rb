@@ -55,8 +55,6 @@ module Amazon
         authors.only
       end
 
-      alias_method :offer_price, :lowest_new_price
-
       def title
         root_title || attr_title
       end
