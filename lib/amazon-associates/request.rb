@@ -120,7 +120,7 @@ module Amazon
         'SignatureMethod' => "HmacSHA256"
       )
 
-      unsigned_uri = URI.parse("http://webservices.amazon.#{tld(opts.delete("Country"))}/onca/xml?#{params.sort { |a, b| a[0] <=> b[0] }.map { |key, val| "#{key}=#{CGI::escape(val).gsub('+', '%20')}" }.join("&")}")
+      unsigned_uri = URI.parse("http://ecs.amazonaws.#{tld(opts.delete("Country"))}/onca/xml?#{params.sort { |a, b| a[0] <=> b[0] }.map { |key, val| "#{key}=#{CGI::escape(val).gsub('+', '%20')}" }.join("&")}")
       hmac = HMAC::SHA256.new(ENV['AMAZON_SECRET_ACCESS_KEY'])
       hmac.update("GET\n#{unsigned_uri.host}\n#{unsigned_uri.path}\n#{unsigned_uri.query}")
       "#{unsigned_uri}&Signature=#{CGI::escape(Base64.encode64(hmac.digest).chomp)}"
