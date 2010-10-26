@@ -151,10 +151,12 @@ module Amazon
       DEFAULT_RESPONSE_GROUPS = SMALL_RESPONSE_GROUPS + %w{Offers VariationSummary BrowseNodes}
 
       def self.prep_responses(opts)
-        unless opts[:response_group].is_a? Array
-          raise ArgumentError, "Response groups are required to be in array form"
+        opts[:response_group]
+        if opts[:response_group]
+          Array.wrap(opts[:response_group])
+        else
+          DEFAULT_RESPONSE_GROUPS
         end
-        opts[:response_group] ||=  DEFAULT_RESPONSE_GROUPS
       end
     end
 
