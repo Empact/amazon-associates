@@ -32,6 +32,7 @@ module Amazon
 
       xml_reader :editorial_reviews, :as => [EditorialReview]
       xml_reader :customer_reviews, :as => [CustomerReview]
+      xml_reader :features, :as => [], :in => 'xmlns:ItemAttributes'
 
       alias_method :id, :asin
 
