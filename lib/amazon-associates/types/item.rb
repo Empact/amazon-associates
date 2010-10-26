@@ -43,6 +43,10 @@ module Amazon
         true
       end
 
+      def amazon_product_description
+        editorial_reviews.detect {|r| r.source == 'Amazon.com Product Description' }.try(:content)
+      end
+
       def ==(other)
         asin == other.asin
       end
