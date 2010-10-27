@@ -31,7 +31,7 @@ module Amazon
       xml_reader :publisher, :studio, :batteries_included?, :label, :brand, :in => 'xmlns:ItemAttributes'
 
       xml_reader :editorial_reviews, :as => [EditorialReview]
-      xml_reader :customer_reviews, :as => [CustomerReview]
+      xml_reader :customer_reviews, :as => [CustomerReview], :in => 'xmlns:CustomerReviews'
       xml_reader :features, :as => [], :in => 'xmlns:ItemAttributes'
 
       alias_method :id, :asin
