@@ -78,7 +78,9 @@ module Amazon
 
   protected
     def self.log(s)
-      if defined? RAILS_DEFAULT_LOGGER
+      if defined?(Rails) && Rails.respond_to?(:logger)
+        Rails.logger.error(s)
+      elsif defined? RAILS_DEFAULT_LOGGER
         RAILS_DEFAULT_LOGGER.error(s)
       elsif defined? LOGGER
         LOGGER.error(s)
