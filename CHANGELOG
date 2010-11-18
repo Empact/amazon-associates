@@ -1,4 +1,8 @@
-0.7.0 pending
+0.7.1 2010-11-18
+----------------
+* Add :log option to print xml response to log for scrutiny
+
+0.7.0 2010-10-23
 ----------------
 * Update to ruby 1.9 compatibility
 * Update to rspec 2
