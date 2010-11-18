@@ -33,6 +33,7 @@ module Amazon
       if opts[:aWS_access_key_id].blank?
         raise ArgumentError, "amazon-associates requires the :aws_access_key_id option"
       end
+      log_body = opts.delete(:log)
 
       request_url = prepare_url(opts)
       response = nil
@@ -43,13 +44,14 @@ module Amazon
         response = FilesystemCache.get(request_url)
       end
 
-      if response.nil?
+      unless response
         log "Request URL: #{request_url}"
 
         response = Net::HTTP.get_response(URI::parse(request_url))
         unless response.kind_of? Net::HTTPSuccess
           raise RequestError, "HTTP Response: #{response.inspect}"
         end
+        log(response.body) if log_body
         cache_response(request_url, response) if cache_it
       end
 
