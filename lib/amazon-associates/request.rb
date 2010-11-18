@@ -51,11 +51,11 @@ module Amazon
         unless response.kind_of? Net::HTTPSuccess
           raise RequestError, "HTTP Response: #{response.inspect}"
         end
-        log(response.body) if log_body
         cache_response(request_url, response) if cache_it
       end
 
       doc = ROXML::XML::Node.from(response.body)
+      log(doc) if log_body
       eval(doc.name).from_xml(doc, request_url)
     end
 
