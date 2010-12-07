@@ -11,6 +11,10 @@ module Amazon
       xml_reader :children, :as => [BrowseNode]
       xml_reader :top_sellers, :as => [Item]
 
+      def self.find(browse_node_id, opts = {})
+        Amazon::Associates.browse_node_lookup(opts.merge(:browse_node_id => browse_node_id)).browse_nodes.first
+      end
+
       def initialize(id = nil, name = nil, parent = nil)
         @id = id
         @name = name
