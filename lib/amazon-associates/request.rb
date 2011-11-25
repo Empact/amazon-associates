@@ -89,6 +89,7 @@ module Amazon
       BASE_ARGS + VALID_ARGS.fetch(operation, OTHER_ARGS)
     end
 
+    HMAC_DIGEST = OpenSSL::Digest::Digest.new('sha256')
     TLDS = HashWithIndifferentAccess.new(
         'us' => 'com',
         'uk' => 'co.uk',
@@ -121,7 +122,7 @@ module Amazon
       )
 
       unsigned_uri = URI.parse("http://ecs.amazonaws.#{tld(opts.delete(:country))}/onca/xml?#{params.sort { |a, b| a[0] <=> b[0] }.map { |key, val| "#{key}=#{CGI::escape(val).gsub('+', '%20')}" }.join("&")}")
-      hmac = OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha256'), ENV['AMAZON_SECRET_ACCESS_KEY'], "GET\n#{unsigned_uri.host}\n#{unsigned_uri.path}\n#{unsigned_uri.query}")
+      hmac = OpenSSL::HMAC.digest(HMAC_DIGEST, ENV['AMAZON_SECRET_ACCESS_KEY'], "GET\n#{unsigned_uri.host}\n#{unsigned_uri.path}\n#{unsigned_uri.query}")
       "#{unsigned_uri}&Signature=#{CGI::escape(Base64.encode64(hmac).chomp)}"
     end
 
