@@ -6,8 +6,6 @@ end
 
 require 'net/http'
 require 'cgi'
-require 'hmac'
-require 'hmac-sha2'
 require 'base64'
 
 module Amazon
@@ -123,9 +121,8 @@ module Amazon
       )
 
       unsigned_uri = URI.parse("http://ecs.amazonaws.#{tld(opts.delete(:country))}/onca/xml?#{params.sort { |a, b| a[0] <=> b[0] }.map { |key, val| "#{key}=#{CGI::escape(val).gsub('+', '%20')}" }.join("&")}")
-      hmac = HMAC::SHA256.new(ENV['AMAZON_SECRET_ACCESS_KEY'])
-      hmac.update("GET\n#{unsigned_uri.host}\n#{unsigned_uri.path}\n#{unsigned_uri.query}")
-      "#{unsigned_uri}&Signature=#{CGI::escape(Base64.encode64(hmac.digest).chomp)}"
+      hmac = OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha256'), ENV['AMAZON_SECRET_ACCESS_KEY'], "GET\n#{unsigned_uri.host}\n#{unsigned_uri.path}\n#{unsigned_uri.query}")
+      "#{unsigned_uri}&Signature=#{CGI::escape(Base64.encode64(hmac).chomp)}"
     end
 
     def self.cacheable?(operation)

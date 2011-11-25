@@ -11,7 +11,6 @@ Jeweler::Tasks.new do |s|
   s.add_runtime_dependency("roxml", ">= 3.2.0")
   s.add_runtime_dependency("activemodel", ">= 3.0.0")
   s.add_runtime_dependency("activesupport", ">= 2.3.4")
-  s.add_runtime_dependency("ruby-hmac")
   s.add_runtime_dependency("will_paginate")
   s.add_development_dependency("thoughtbot-shoulda")
   s.add_development_dependency("mocha")
