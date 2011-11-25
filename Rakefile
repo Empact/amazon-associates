@@ -8,7 +8,7 @@ Jeweler::Tasks.new do |s|
   s.homepage = "http://github.com/Empact/amazon-associates"
   s.description = "amazon-associates offers object-oriented access to the Amazon Associates API, built on ROXML"
   s.authors = ["Ben Woosley", "Dan Pickett", "Herryanto Siatono"]
-  s.add_runtime_dependency("roxml", ">= 3.1.6")
+  s.add_runtime_dependency("roxml", ">= 3.2.0")
   s.add_runtime_dependency("activemodel", ">= 3.0.0")
   s.add_runtime_dependency("activesupport", ">= 2.3.4")
   s.add_runtime_dependency("ruby-hmac")
