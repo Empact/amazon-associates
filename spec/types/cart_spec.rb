@@ -3,7 +3,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 module Amazon
   module Associates
     describe Cart do
-      before(:all) do
+      before do
         @potter = Amazon::Associates::item_lookup("0545010225").item
         @batman = Amazon::Associates::item_search("batman").items.first
         @joker = Amazon::Associates::item_search("joker").items.first
@@ -51,7 +51,7 @@ module Amazon
 
       describe ".create" do
         context "items passed in hash form" do
-          before(:all) do
+          before do
             @cart = Cart.create(@potter => 1, @batman => 3)
           end
 
@@ -64,7 +64,7 @@ module Amazon
 
         context "items passed in array form" do
           context "with actual items" do
-            before(:all) do
+            before do
               @cart = Cart.create([@potter, @batman])
             end
 
@@ -77,7 +77,7 @@ module Amazon
           end
 
           context "with hashes containing item asins" do
-            before(:all) do
+            before do
               @items = { { :asin => "0974514055" } => 2, { :asin => "0672328844" } => 3 }
               @cart = Cart.create(@items)
             end
@@ -96,7 +96,7 @@ module Amazon
           end
 
           context "with hashes containing offer_listing_ids" do
-            before(:all) do
+            before do
               @items = { { :offer_listing_id => "MCK%2FnCXIges8tpX%2B222nOYEqeZ4AzbrFyiHuP6pFf45N3vZHTm8hFTytRF%2FLRONNkVmt182%2BmeX72n%2BbtUcGEtpLN92Oy9Y7"} => 2 }
               @cart = Cart.create(@items)
             end
@@ -134,7 +134,7 @@ module Amazon
         end
 
         context "with an existing cart" do
-          before(:all) do
+          before do
             @cart = Cart.get(@existing_cart)
           end
 
@@ -142,7 +142,7 @@ module Amazon
         end
 
         context "with an id and hmac" do
-          before(:all) do
+          before do
             @cart = Cart.get(:id => @existing_cart.id, :hmac => @existing_cart.hmac)
           end
 
@@ -167,7 +167,7 @@ module Amazon
 
       describe "#add" do
         context "adding a new item, on save" do
-          before(:all) do
+          before do
             @number_added = 3
             @item_added = @joker
             @existing_cart.should_not include(@item_added)
@@ -185,7 +185,7 @@ module Amazon
           end
 
           context "on save" do
-            before(:all) do
+            before do
               @existing_cart.should have(2).items
               lambda { @existing_cart.save }.should change(@existing_cart, :quantity).by(@number_added)
               @existing_cart.should have(3).items
@@ -214,7 +214,7 @@ module Amazon
           end
 
           context "on save" do
-            before(:all) do
+            before do
               lambda { @existing_cart.save }.should change {
                 @existing_cart.items.find {|item| item == @item_added }.quantity }.by(@number_added)
 
@@ -231,7 +231,7 @@ module Amazon
         end
 
         context "adding an existing item, on save, via add" do
-          before(:all) do
+          before do
             @number_added = 2
             @item_added = @existing_items.first
             @cart = @existing_cart
@@ -242,7 +242,7 @@ module Amazon
         end
 
         context "adding an existing item, on save, via add" do
-          before(:all) do
+          before do
             @number_added = 1
             @item_added = @existing_items.first
             @cart = @existing_cart
@@ -254,7 +254,7 @@ module Amazon
       end
 
       describe "#clear" do
-        before(:all) do
+        before do
           @existing_quantity = @existing_cart.quantity
           @existing_quantity.should == 4
           @existing_cart.empty?.should be_false
@@ -272,7 +272,7 @@ module Amazon
         end
 
         context "after #save" do
-          before(:all) do
+          before do
             @cart.should have(2).items
 
             lambda { @cart.save }.should change {
